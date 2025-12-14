@@ -125,3 +125,184 @@ Redis的通用命令是不分数据类型的，都可以使用的命令:
 | type key     | 返回key所存储的值的类型                    |
 | del key      | 该命令用于在key存在时删除key               |
 
+## 2.Java操作Redis
+
+###2.1Redis的Java客户端
+
+1. Jedis
+2. Lettuce
+3. Spring Data Redis
+
+Spring Data Redis是Spring的一部分，对Redis底层开发包进行了高度封装。
+
+在Spring项目中，可以使用Spring Data Redis来简化操作
+
+### 2.2Spring Data Redis使用方式
+
+1.导入Spring Data Redis的maven坐标
+
+```xml
+<!-- 引入spring data redis -->
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-data-redis</artifactId>
+</dependency>
+```
+
+2.配置Redis数据源
+
+```yaml
+spring:
+  profiles:
+    active: dev
+  redis:
+    host: ${sky.redis.host}
+    port: ${sky.redis.port}
+    password: ${sky.redis.password}
+    database: ${sky.redis.database}
+```
+
+```yaml
+sky:
+  redis:
+    host: localhost
+    port: 6379
+    password: 1234
+    database: 0
+```
+
+3.编写配置类，创建RedisTemplate对象
+
+```java
+@Configuration
+@Slf4j
+public class RedisConfiguration {
+
+    /**
+     * 创建RedisTemplate对象
+     * @param redisConnectionFactory
+     * @return
+     */
+    @Bean
+    public RedisTemplate redisTemplate(RedisConnectionFactory redisConnectionFactory) {
+        log.info("开始创建RedisTemplate对象...");
+        RedisTemplate redisTemplate = new RedisTemplate();
+        //设置redis的连接工厂对象
+        redisTemplate.setConnectionFactory(redisConnectionFactory);
+        //设置key的序列化器
+        redisTemplate.setKeySerializer(new StringRedisSerializer());
+        return redisTemplate;
+    }
+}
+```
+
+4.编写RedisTemplate对象操作Redis
+
+```java
+@SpringBootTest
+public class SpringDataRedisTest {
+
+    @Autowired
+    private RedisTemplate redisTemplate;
+
+    @Test
+    public void testRedisTemplate(){
+        System.out.println(redisTemplate);
+        ValueOperations valueOperations = redisTemplate.opsForValue();
+        SetOperations setOperations = redisTemplate.opsForSet();
+        ZSetOperations zSetOperations = redisTemplate.opsForZSet();
+        ListOperations listOperations = redisTemplate.opsForList();
+        HashOperations hashOperations = redisTemplate.opsForHash();
+    }
+
+    @Test
+    public void testString(){
+        redisTemplate.opsForValue().set("name","donk");
+        String name = (String)redisTemplate.opsForValue().get("name");
+        System.out.println(name);
+        redisTemplate.opsForValue().set("age",18,3, TimeUnit.MINUTES);
+        redisTemplate.opsForValue().setIfAbsent("gender","男");
+        redisTemplate.opsForValue().setIfAbsent("gender","女");
+    }
+
+    @Test
+    public void testHash(){
+        HashOperations hashOperations = redisTemplate.opsForHash();
+        hashOperations.put("100","name","donk");
+        hashOperations.put("100","age","18");
+        String name = (String) hashOperations.get("100", "name");
+        System.out.println(name);
+        Set keys = hashOperations.keys("100");
+        System.out.println(keys);
+        List values = hashOperations.values("100");
+        System.out.println(values);
+        hashOperations.delete("100","name");
+        hashOperations.delete("100","age");
+
+    }
+    
+    @Test
+    public void testList(){
+        //lpush lrange llen rpop
+        ListOperations listOperations = redisTemplate.opsForList();
+        listOperations.leftPushAll("mylist",'a','b','c','d','e');
+        List mylist = listOperations.range("mylist", 0, -1);
+        System.out.println(mylist);
+        listOperations.rightPop("mylist");
+        Long mylistlen = listOperations.size("mylist");
+        System.out.println(mylistlen);
+    }
+
+    @Test
+    public void testSet(){
+        SetOperations setOperations = redisTemplate.opsForSet();
+        setOperations.add("myset1","a","b","c","d","e");
+        setOperations.add("myset2","a","b","c","x","y");
+        Set myset = setOperations.members("myset1");
+        System.out.println(myset);
+        Set intersect = setOperations.intersect("myset1", "myset2");
+        System.out.println(intersect);
+        Set union = setOperations.union("myset1", "myset2");
+        System.out.println(union);
+        setOperations.remove("myset1","b");
+        Long myset1Len = setOperations.size("myset1");
+        System.out.println(myset1Len);
+    }
+
+    @Test
+    public void testZSet(){
+        ZSetOperations zSetOperations = redisTemplate.opsForZSet();
+        zSetOperations.add("myzset",'a',1);
+        zSetOperations.add("myzset",'b',2);
+        Set myzset = zSetOperations.range("myzset", 0, -1);
+        System.out.println(myzset);
+        zSetOperations.incrementScore("myzset",'a',10);
+        Set myzset2 = zSetOperations.range("myzset", 0, -1);
+        System.out.println(myzset2);
+        zSetOperations.remove("myzset",'b');
+    }
+
+    @Test
+    public void testTotalCommend(){
+        Set keys = redisTemplate.keys("*");
+        System.out.println( keys);
+        for (Object key : keys) {
+            DataType type = redisTemplate.type(key);
+            System.out.println(key+"--->"+type);
+        }
+        for (Object key : keys){
+            redisTemplate.delete(key);
+        }
+
+    }
+
+
+}
+```
+
+
+
+
+
+
+
