@@ -300,6 +300,49 @@ public class SpringDataRedisTest {
 }
 ```
 
+## 3.Knife4j多端设置
+
+![端设](.\assets\多端设置.png)
+
+想要实现多端设置，只需要多生成一个Docket对象
+
+```java
+@Bean
+public Docket docketAdmin() {
+    log.info("准备生成接口文档...");
+    ApiInfo apiInfo = new ApiInfoBuilder()
+        .title("苍穹外卖项目接口文档")
+        .version("2.0")
+        .description("苍穹外卖项目接口文档")
+        .build();
+    Docket docket = new Docket(DocumentationType.SWAGGER_2)
+        .groupName("管理端接口文档")//设置分组名字
+        .apiInfo(apiInfo)
+        .select()
+        .apis(RequestHandlerSelectors.basePackage("com.sky.controller.admin"))//设置扫描范围
+        .paths(PathSelectors.any())
+        .build();
+    return docket;
+}
+@Bean
+public Docket docketUser() {
+    log.info("准备生成接口文档...");
+    ApiInfo apiInfo = new ApiInfoBuilder()
+        .title("苍穹外卖项目接口文档")
+        .version("2.0")
+        .description("苍穹外卖项目接口文档")
+        .build();
+    Docket docket = new Docket(DocumentationType.SWAGGER_2)
+        .groupName("用户端接口文档")//设置分组名字
+        .apiInfo(apiInfo)
+        .select()
+        .apis(RequestHandlerSelectors.basePackage("com.sky.controller.user"))//设置扫描范围
+        .paths(PathSelectors.any())
+        .build();
+    return docket;
+}
+```
+
 
 
 
