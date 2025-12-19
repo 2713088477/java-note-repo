@@ -85,3 +85,27 @@ public class HttpClientTest {
 }
 ```
 
+## 3.给Bean起别名
+
+springboot默认以类名小写为bean名称，如果我们项目中存在相同的类名，即使是在不同包中，也会bean名称冲突，可以在@Controller,@Service,@Component的value属性起别名。
+
+```java
+@RestController("userCategoryController")
+@RequestMapping("/user/category")
+@Slf4j
+@Api(tags = "c端分类接口")
+public class CategoryController {
+
+
+    @Autowired
+    private CategoryService categoryService;
+    @GetMapping("/list")
+    public Result<List<Category>> getList(Integer type){
+        log.info("用户查询分类列表,{}",type);
+        List<Category> list = categoryService.getListByType(type);
+        return Result.success(list);
+
+    }
+}
+```
+
