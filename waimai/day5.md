@@ -171,7 +171,22 @@ sky:
     database: 0
 ```
 
-3.编写配置类，创建RedisTemplate对象
+3.在启动类上开启缓存注解
+
+```java
+@SpringBootApplication
+@EnableTransactionManagement //开启注解方式的事务管理
+@Slf4j
+@EnableCaching //开启缓存注解功能
+public class SkyApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(SkyApplication.class, args);
+        log.info("server started");
+    }
+}
+```
+
+4.编写配置类，创建RedisTemplate对象
 
 ```java
 @Configuration
@@ -196,7 +211,7 @@ public class RedisConfiguration {
 }
 ```
 
-4.编写RedisTemplate对象操作Redis
+5.编写RedisTemplate对象操作Redis
 
 ```java
 @SpringBootTest
