@@ -352,5 +352,343 @@ handleSend(){
 }
 ```
 
+### 8.Vue-Router介绍
 
+vue属于单页面应用，所谓的路由，就是根据浏览器路径不同，用不同的视图组件替换这个页面内容
+
+vue应用中如何实现路由:通过vue-router实现路由功能，需要安装js库(npm install vue-router)
+
+![ue-route](assets\Vue-router.png)
+
+路由组成:
+
+1. VueRouter:路由器，根据路由请求在路由视图中动态渲染对应的视图组件
+2. <router-link>:路由连接组件，浏览器会解析成<a>
+3. <router-view>:路由视图组件，用来展示与路由路径匹配的视图组件
+
+App.vue:
+
+```vue
+<template>
+  <div id="app">
+    <nav>
+      <router-link to="/">Home</router-link> |
+      <router-link to="/about">About</router-link>
+    </nav>
+    <router-view/>
+  </div>
+</template>
+```
+
+router/index.js
+
+```javascript
+Vue.use(VueRouter)
+
+const routes = [
+  {
+    path: '/',
+    name: 'home',
+    component: HomeView
+  },
+  {
+    path: '/about',
+    name: 'about',
+    // route level code-splitting
+    // this generates a separate chunk (about.[hash].js) for this route
+    // which is lazy-loaded when the route is visited.
+    component: () => import(/* webpackChunkName: "about" */ '../views/AboutView.vue')
+  }
+]
+
+const router = new VueRouter({
+  routes
+})
+
+export default router
+```
+
+实现路由跳转有两种方式:标签式和编程式
+
+```vue
+<template>
+  <div id="app">
+    <nav>
+      <router-link to="/">Home</router-link> |
+      <router-link to="/about">About</router-link>
+      <input type="button" @click="jump" value="编程式路由跳转">
+    </nav>
+    <router-view/>
+  </div>
+</template>
+<script>
+  export default{
+    methods:{
+      jump(){
+        this.$router.push('/about')
+      }
+    }
+  }
+</script>
+```
+
+如果用户访问的路由地址不存在，如何处理?:
+
+```javascript
+const routes = [
+  {
+    path: '/',
+    name: 'home',
+    component: HomeView
+  },
+  {
+    path: '/about',
+    name: 'about',
+    // route level code-splitting
+    // this generates a separate chunk (about.[hash].js) for this route
+    // which is lazy-loaded when the route is visited.
+    component: () => import(/* webpackChunkName: "about" */ '../views/AboutView.vue')
+  },
+  {
+    path: '/404',
+    component: () => import(/* webpackChunkName: "about" */ '../views/404View.vue')
+  },
+  {
+    path: '*',
+    redirect: '/404'
+  }
+]
+```
+
+### 9.嵌套路由
+
+嵌套路由:组件内要切换内容，就需要用到嵌套路由
+
+路由表:
+
+```javascript
+{
+    path: '/c',
+    component: () => import(/* webpackChunkName: "about" */ '../views/container/AppContainer.vue'),
+    redirect:'/c/p1',//默认展示p1
+    children: [
+      {
+        path: '/c/p1',
+        component: () => import('../views/container/P1View.vue')
+      },
+      {
+        path: '/c/p2',
+        component: () => import('../views/container/P2View.vue')
+      },
+      {
+        path: '/c/p3',
+        component: () => import('../views/container/P3View.vue')
+      },
+    ]
+  }
+```
+
+组件:
+
+```vue
+<template>
+  <el-container>
+    <el-header>Header</el-header>
+    <el-container>
+      <el-aside width="200px">
+        <router-link to="/c/p1">p1Vue</router-link><br>
+        <router-link to="/c/p2">p2Vue</router-link><br>
+        <router-link to="/c/p3">p3Vue</router-link><br>
+      </el-aside>
+      <el-main>
+        <router-view/>
+      </el-main>
+    </el-container>
+  </el-container>
+</template>
+```
+
+### 10.Vuex
+
+1. vuex是一个专为Vue.js应用程序开发的状态管理库
+2. vuex可以在多个组件之间共享数据，并且共享的数据是响应式的，即数据的变更能及时渲染到模板
+3. vuex采用集中式存储管理所有组件的状态
+
+安装vuex:
+
+`npm install vuex@next --save `
+
+vuex介绍:
+
+1. state:状态对象，集中定义各个组件共享的数据
+2. mutations:类似于一个事件，用于修改共享数据，要求必须是同步函数
+3. 类似于mutation,可以包含异步操作，通过调用mutation来改变共享数据
+
+定义和展示数据:
+
+```javascript
+import Vue from 'vue'
+import Vuex from 'vuex'
+
+Vue.use(Vuex)
+
+export default new Vuex.Store({
+  state: {
+    name: '未登录游客'
+  },
+  getters: {
+  },
+  mutations: {
+  },
+  actions: {
+  },
+  modules: {
+  }
+})
+
+```
+
+```vue
+<template>
+  <div class="hello">
+    <h1>{{ $store.state.name }}</h1>
+    
+  </div>
+</template>
+```
+
+修改数据:
+
+```javascript
+import Vue from 'vue'
+import Vuex from 'vuex'
+
+Vue.use(Vuex)
+
+export default new Vuex.Store({
+  state: {
+    name: '未登录游客'
+  },
+  getters: {
+  },
+  //通过当前属性中定义的函数修改共享数据，必须都是同步操作
+  mutations: {
+    setName(state, newName) {
+      state.name = newName
+    }
+  },
+  actions: {
+  },
+  modules: {
+  }
+})
+
+```
+
+```vue
+<template>
+  <div id="app">
+    欢迎您,{{ $store.state.name }}
+    <button @click="handleUpdate">修改名字</button>
+    <img alt="Vue logo" src="./assets/logo.png">
+    <HelloWorld/>
+  </div>
+</template>
+
+<script>
+import HelloWorld from './components/HelloWorld.vue'
+
+export default {
+  name: 'App',
+  components: {
+    HelloWorld
+  },
+  methods:{
+    handleUpdate(){
+      this.$store.commit('setName','苏无名')
+    }
+  }
+}
+</script>
+```
+
+发送异步数据:
+
+```javascript
+import Vue from 'vue'
+import Vuex from 'vuex'
+import axios from 'axios'
+
+Vue.use(Vuex)
+
+export default new Vuex.Store({
+  state: {
+    name: '未登录游客'
+  },
+  getters: {
+  },
+  //通过当前属性中定义的函数修改共享数据，必须都是同步操作
+  mutations: {
+    setName(state, newName) {
+      state.name = newName
+    }
+  },
+  //通过actions调用mutation,在actions中可以进行异步操作
+  actions: {
+    setNameByAxios(context) {
+      axios({
+        url: '/api/admin/employee/login',
+        method: 'post',
+        data: {
+          username: 'admin',
+          password: '123456'
+        }
+      }).then(res => {
+        if (res.data.code) {
+          //调用mutations的函数
+          context.commit('setName', res.data.data.name)
+        }
+      })
+    }
+  },
+  modules: {
+  }
+})
+
+```
+
+```vue
+<template>
+  <div id="app">
+    欢迎您,{{ $store.state.name }}
+    <button @click="handleUpdate">修改名字</button>
+    <button @click="handleCallAction">发送异步请求</button>
+    <img alt="Vue logo" src="./assets/logo.png">
+    <HelloWorld/>
+  </div>
+</template>
+
+<script>
+import HelloWorld from './components/HelloWorld.vue'
+
+export default {
+  name: 'App',
+  components: {
+    HelloWorld
+  },
+  methods:{
+    handleUpdate(){
+      //通过这种方式来调用mutations中的函数
+      this.$store.commit('setName','苏无名')
+    },
+    handleCallAction(){
+      //通过这种方式来调用actions中的函数
+      this.$store.dispatch('setNameByAxios')
+    }
+  }
+}
+</script>
+
+
+```
 
