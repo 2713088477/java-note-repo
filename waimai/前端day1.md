@@ -692,3 +692,165 @@ export default {
 
 ```
 
+## 4.TypeScript介绍
+
+TypeScript(简称:TS) 是微软推出的开源语言
+
+TypeScript是JavaScript的超集(JS有的TS都有)
+
+TypeScript=Type+JavaScript(在JS的基础上增加了类型支持)
+
+TypeScript文件扩展名为ts
+
+TypeScript可编译成标准的JavaScript，并且在编译时进行类型检查
+
+```typescript
+//TypeScript代码：有明确的类型，即:number(数值类型)
+let age:number = 18
+```
+
+![s执行流](assets\ts执行流程.png)
+
+安装typescript:
+
+`npm install -g typescript` -g是全局安装
+
+
+
+TS为什么要增加类型支持?
+
+1. TS属于静态类型编程语言，JS属于动态类型编程语言
+2. 静态类型在编译期做类型检查，动态类型在执行期做类型检查
+3. 配合VSCode开发工具，TS可以提前到在编写代码的同时就发现代码中的错误，减少找Bug,改Bug的时间
+
+
+
+TypeScript常用类型:
+
+| 类型       | 例                          | 备注                           |
+| ---------- | --------------------------- | ------------------------------ |
+| 字符串类型 | string                      |                                |
+| 数字类型   | number                      |                                |
+| 布尔类型   | boolean                     |                                |
+| 数组类型   | number[],string[].boolean[] |                                |
+| 任意类型   | any                         | 相当于又回到了没有类型的时代   |
+| 复杂类型   | type与interface             |                                |
+| 函数类型   | () => void                  | 对函数的参数和返回值进行了说明 |
+| 字面量类型 | "a"\|"b"\|"c"               | 限制变量或参数的取值           |
+| class 类   | class Animal                |                                |
+
+### 1.类型标注的位置
+
+1. 标注变量
+2. 标注参数
+3. 标注返回值
+
+```typescript
+let username: string = 'itcast'
+let age: number = 20
+let isTrue: boolean = true
+console.log(username)
+console.log(age)
+console.log(isTrue)
+```
+
+```typescript
+//字面量类型:用于限定数据的取值范围
+function printTest(s1: string, s2: 'left' | 'right' | 'center') {
+  console.log(s1, s2);
+}
+printTest('hello', 'left')
+printTest('hello', 'center')
+```
+
+```typescript
+//interface类型
+interface Cat {
+  name: string,
+  age: number,
+  sex: '男' | '女'
+}
+let c1: Cat = { name: 'danking', age: 2, sex: '男' }
+```
+
+```typescript
+//interface类型
+interface Cat {
+  name: string,
+  age: number,
+  sex?: '男' | '女' //属性名后面加?,表示当前属性可有可没有
+}
+let c1: Cat = { name: 'danking', age: 2, sex: '男' }
+let c2: Cat = { name: 'jumyoung', age: 1 }
+```
+
+```typescript
+//类
+//使用class关键字来定义类,类中可以包含属性,构造方法，普通函数
+class User {
+  name: string
+  constructor(name: string) {
+    this.name = name
+  }
+  study() {
+    console.log(`${this.name}正在学习`)
+  }
+}
+const s1 = new User('张不才')
+s1.study()
+```
+
+注意class在js中其实是个function
+
+```javascript
+//类
+//使用class关键字来定义类,类中可以包含属性,构造方法，普通函数
+var User = /** @class */ (function () {
+    function User(name) {
+        this.name = name;
+    }
+    User.prototype.study = function () {
+        console.log("".concat(this.name, "\u6B63\u5728\u5B66\u4E60"));
+    };
+    return User;
+}());
+var s1 = new User('张不才');
+s1.study();
+```
+
+```typescript
+//class类-实现接口
+interface Animal {
+  name: string
+  eat(): void
+}
+class Bird implements Animal {
+  name: string
+  constructor(name: string) {
+    this.name = name
+  }
+  eat(): void {
+    console.log(`${this.name}吃饭中`)
+  }
+}
+
+const b1 = new Bird('杜鹃')
+console.log(b1.name)
+b1.eat()
+```
+
+```typescript
+//class-类的继承
+//定义Parrot类，并且继承Bird类
+class Parrot extends Bird {
+  say(): void {
+    console.log(`${this.name} say hello`)
+  }
+}
+const myParrot = new Parrot('polly')
+myParrot.say()
+myParrot.eat()
+```
+
+
+
