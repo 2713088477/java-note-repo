@@ -13,11 +13,12 @@ spring:
     password: 1234
 ```
 
-配置mybatis输出日志
+配置mybatis大小写转换和输出日志
 
 ```yaml
 mybatis:
   configuration:
+    map-underscore-to-camel-case: true
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
 ```
 
