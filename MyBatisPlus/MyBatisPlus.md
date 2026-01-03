@@ -578,7 +578,7 @@ public void pageQueryTest(){
 }
 ```
 
-### 2.通用分类实体
+### 2.通用分页实体
 
 ```java
 @Data
@@ -654,6 +654,119 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         pageDTO.setList(BeanUtil.copyToList(page.getRecords(), UserVO.class));
         return pageDTO;
     }
+}
+```
+
+### 3.通用分页实体封装方法
+
+1.PageQuery类封装
+
+```java
+@Data
+@ApiModel(description = "分页查询条件实体")
+public class PageQuery {
+    @ApiModelProperty("页码")
+    private Integer pageNo=1;
+    @ApiModelProperty("每页数量")
+    private Integer pageSize=5;
+    @ApiModelProperty("排序字段")
+    private String sortBy;
+    @ApiModelProperty("是否升序")
+    private Boolean isAsc=true;
+
+    public <T> Page<T> toMpPage(OrderItem ... items){
+        Page<T> page = Page.of(pageNo, pageSize);
+        if(StrUtil.isNotBlank(sortBy)){
+            page.addOrder(new OrderItem(sortBy, isAsc));
+        }else if(items!=null){
+            page.addOrder(items);
+        }
+        return page;
+    }
+    public <T> Page<T> toMpPage(String sortBy, Boolean isAsc){
+        return toMpPage(new OrderItem(sortBy, isAsc));
+    }
+    public <T> Page<T> toMpPageDefaultByCreateTimeAsc(){
+        return toMpPage(new OrderItem("create_time", true));
+    }
+    public <T> Page<T> toMpPageDefaultByCreateTimeDesc(){
+        return toMpPage(new OrderItem("create_time", false));
+    }
+    public <T> Page<T> toMpPageDefaultByUpdateTimeAsc(){
+        return toMpPage(new OrderItem("update_time", true));
+    }
+    public <T> Page<T> toMpPageDefaultByUpdateTimeDesc(){
+        return toMpPage(new OrderItem("update_time", false));
+    }
+}
+```
+
+2.DTO类封装
+
+```java
+@Data
+@ApiModel(description = "分页结果")
+public class PageDTO<T> {
+    @ApiModelProperty("总记录数")
+    private Long total;
+    @ApiModelProperty("总页数")
+    private Long pages;
+    @ApiModelProperty("当前页数据集合")
+    private List<T> list;
+
+    public static <VO,PO> PageDTO<VO> of(Page<PO> page,Class<VO> clazz){
+        PageDTO<VO> pageDTO = new PageDTO<>();
+        pageDTO.setTotal(page.getTotal());
+        pageDTO.setPages(page.getPages());
+        if(page.getRecords().isEmpty()){
+            pageDTO.setList(Collections.emptyList());
+            return pageDTO;
+        }
+        pageDTO.setList(BeanUtil.copyToList(page.getRecords(), clazz));
+        return pageDTO;
+    }
+    public static <VO,PO> PageDTO<VO> of(Page<PO> page, Function<PO,VO> convertor){
+        PageDTO<VO> pageDTO = new PageDTO<>();
+        pageDTO.setTotal(page.getTotal());
+        pageDTO.setPages(page.getPages());
+        if(page.getRecords().isEmpty()){
+            pageDTO.setList(Collections.emptyList());
+            return pageDTO;
+        }
+        pageDTO.setList(page.getRecords().stream().map(convertor).collect(Collectors.toList()));
+        return pageDTO;
+    }
+
+}
+
+```
+
+3.封装了之后的业务层代码
+
+```java
+/**
+     * 分页查询用户列表
+     * @param userQuery
+     * @return
+*/
+@Override
+public PageDTO<UserVO> queryUserPage(UserQuery userQuery) {
+    String name = userQuery.getName();
+    Integer status = userQuery.getStatus();
+    //1.构建分页条件
+    Page<User> page = userQuery.toMpPageDefaultByUpdateTimeAsc();
+    //2.使用lambda查询
+    lambdaQuery().like(name != null, User::getUsername, name)
+        .eq(status != null, User::getStatus, status)
+        .page(page);
+    //3.封装结果
+    return PageDTO.of(page,user->{
+        //1.拷贝基础属性
+        UserVO userVO = BeanUtil.copyProperties(user, UserVO.class);
+        //2.处理特俗逻辑
+        userVO.setUsername(userVO.getUsername().substring(0,userVO.getUsername().length()-2)+"**");
+        return userVO;
+    });
 }
 ```
 
