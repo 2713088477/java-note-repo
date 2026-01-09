@@ -22,7 +22,7 @@ MyBatisPlus的官方提供了starter,其中集成了Mybatis和MybatisPlus的所�
 
 ```java
 public interface UserMapper extends BaseMapp<User>{
-    
+
 }
 ```
 
@@ -34,7 +34,7 @@ MybatisPlus通过扫描实体类，并基于反射获取实体类信息作为数
 
 ```java
 public interface UserMapper extends BaseMapp<User>{//继承的时候绑定了实体类
-    
+
 }
 ```
 
@@ -57,16 +57,16 @@ MybatisPlus比较常用的几个注解:
 public class User {
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
-    
+
     @TableField("username")
     private String name;
-    
+
     @TableField("is_marryed")
     private Boolean isMarried;
-    
+
     @TableField("`order`")
     private Integer order;
-    
+
     @TableField(exist = false)
     private String address;
 }
@@ -104,7 +104,7 @@ mybatis-plus:
 
 MybatisPlus支持各种复杂的where条件，可以满足日常开发的所有需求
 
-![件构造](assets\条件构造器.png)
+<img title="" src="assets\条件构造器.png" alt="件构造" data-align="inline">
 
 ```java
 @Test
@@ -155,7 +155,6 @@ public void testLambdaQueryWrapper(){
 1. QueryWrapper和LambdaQueryWrapper通常用来构建sql中的where条件部分
 2. UpdateWrapper和LambdaUpdateWrapper通常只有在set语句比较特殊才使用
 3. 尽量使用LambdaQueryWrapper和LambdaUpdateWrapper，避免硬编码
-
 
 ## 5.自定义SQL
 
@@ -337,7 +336,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
     }
 }
-
 ```
 
 ### IService的Lambda修改
@@ -394,8 +392,6 @@ spring:
 需要安装插件:
 
 ![码生成器插](assets\代码生成器插件.png)
-
-
 
 ![码生成器配](assets\代码生成器配置.png)
 
@@ -505,7 +501,7 @@ mybatis-plus:
 public class User {
     private Long id;
     private String username;
-	//第一步
+    //第一步
     @TableField(typeHandler = JacksonTypeHandler.class)
     private UserInfo info;
 }
@@ -520,21 +516,20 @@ public class UserInfo {
     private String intro;
     private String gender;
 }
-
 ```
 
 ## 7.插件功能
 
 mp提供的内置拦截器有下面这些:
 
-| 序号 | 拦截器                           | 描述                               |
-| ---- | -------------------------------- | ---------------------------------- |
-| 1    | TenantLineInnerInterceptor       | 多租户插件                         |
-| 2    | DynamicTableNameInnerInterceptor | 动态表名插件                       |
-| 3    | PaginationInnerInterceptor       | 分页插件                           |
-| 4    | OptimisticLockerInnerInterceptor | 乐观锁插件                         |
-| 5    | IllegalSQLInnerInterceptor       | SQL性能规范插件，检测并拦截垃圾SQL |
-| 6    | BlockAttackInnerInterceptor      | 防止全表更新和删除的插件           |
+| 序号  | 拦截器                              | 描述                   |
+| --- | -------------------------------- | -------------------- |
+| 1   | TenantLineInnerInterceptor       | 多租户插件                |
+| 2   | DynamicTableNameInnerInterceptor | 动态表名插件               |
+| 3   | PaginationInnerInterceptor       | 分页插件                 |
+| 4   | OptimisticLockerInnerInterceptor | 乐观锁插件                |
+| 5   | IllegalSQLInnerInterceptor       | SQL性能规范插件，检测并拦截垃圾SQL |
+| 6   | BlockAttackInnerInterceptor      | 防止全表更新和删除的插件         |
 
 ### 1.分页插件的基本使用
 
@@ -738,7 +733,6 @@ public class PageDTO<T> {
     }
 
 }
-
 ```
 
 3.封装了之后的业务层代码
@@ -769,8 +763,3 @@ public PageDTO<UserVO> queryUserPage(UserQuery userQuery) {
     });
 }
 ```
-
-
-
-
-
