@@ -197,12 +197,39 @@ export default defineConfig({
 </script>
 ```
 
+![](assets/reactive创建对象类型的响应式数据.png)
+
 **声明:**
 
 1.reactive是深层次的响应式
 
 2.数组和函数本质上也是对象
 
+## 6.ref和reactive详解
 
+**ref可以定义基本类型和对象类型的响应式数据**
+
+**reactive只能定义对象类型的响应式数据**
+
+代码:
+
+```v
+<script setup lang="ts" name="Person">
+  import { ref } from 'vue';
+  const car= ref({brand:'奔驰',price:2000})
+  console.log(car)
+  const games = ref([{id:'01',name:'王者荣耀'},{id:'02',name:'英雄联盟'},{id:'03',name:'和平精英'}])
+  function changePrice(){
+    car.value.price=car.value.price+100
+  }
+  function changeGame(){
+    games.value[0].name = '原神'
+  }
+</script>
+```
+
+![](assets/用ref声明对象的响应式数据.png)
+
+可以看到ref声明的对象的响应式是Proxy，所以ref可以声明对象的响应式数据。但是底层用的**reactive**
 
 
