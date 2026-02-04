@@ -269,8 +269,81 @@ const changeCar = () => {
 
 3.若需要一个响应式对象，且层级较深，推荐使用reactive
 
+## 8.toRefs和toRef
+
+```v
+<template>
+  <div class="main">
+   <h2>人的姓名:{{ person.name }} 人的年龄:{{ person.age }}</h2>
+   <button @click="changeName">修改姓名</button>
+   <button @click="changeAge">修改年龄</button>
+   
 
 
+  </div>
+</template>
+<script setup name="Person" lang="ts">
+  import { reactive } from 'vue';
+  const person = reactive({
+    name: '张三',
+    age: 18,
+  })
 
+  let { name, age } = person
+  function changeName() {
+    name +="~"
+    console.log(name,person.name)
+  }
+  function changeAge() {
+    age ++
+    console.log(age,person.age)
+  }
+  
+</script>
+```
+
+![](assets/toRefs之前的结果.png)
+
+可以看到这样的解构根本没有修改到真正的person里面的数据，同时解构出来的name和age也不是响应式的。
+
+如果我们想要解构的话，必须用toRefs
+
+```v
+<template>
+  <div class="main">
+   <h2>人的姓名:{{ person.name }} 人的年龄:{{ person.age }}</h2>
+   <button @click="changeName">修改姓名</button>
+   <button @click="changeAge">修改年龄</button>
+   
+
+
+  </div>
+</template>
+<script setup name="Person" lang="ts">
+  import { reactive,toRefs } from 'vue';
+  const person = reactive({
+    name: '张三',
+    age: 18,
+  })
+
+  let { name, age } = toRefs(person) 
+  console.log(toRefs(person))
+  function changeName() {
+    name.value +="~"
+    console.log(name,person.name)
+  }
+  function changeAge() {
+    age.value ++
+    console.log(age,person.age)
+  }
+  
+</script>
+```
+
+![](assets/toRefs的结果.png)
+
+**<font color="red">一言以蔽之:toRefs接收一个reactive声明的对象，同时将这个对象的属性都变为ref的响应式，并且修改单个ref的属性的时候，reactive声明的对象对应的属性 也会改变</font>**
+
+toRef就是让指定的单个属性变为响应式:`let namesingle = toRef(person,'name')`,和toRefs一样的效果
 
 
