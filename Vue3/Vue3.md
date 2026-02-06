@@ -277,7 +277,7 @@ const changeCar = () => {
    <h2>人的姓名:{{ person.name }} 人的年龄:{{ person.age }}</h2>
    <button @click="changeName">修改姓名</button>
    <button @click="changeAge">修改年龄</button>
-   
+
 
 
   </div>
@@ -298,7 +298,7 @@ const changeCar = () => {
     age ++
     console.log(age,person.age)
   }
-  
+
 </script>
 ```
 
@@ -314,7 +314,7 @@ const changeCar = () => {
    <h2>人的姓名:{{ person.name }} 人的年龄:{{ person.age }}</h2>
    <button @click="changeName">修改姓名</button>
    <button @click="changeAge">修改年龄</button>
-   
+
 
 
   </div>
@@ -336,7 +336,7 @@ const changeCar = () => {
     age.value ++
     console.log(age,person.age)
   }
-  
+
 </script>
 ```
 
@@ -345,5 +345,52 @@ const changeCar = () => {
 **<font color="red">一言以蔽之:toRefs接收一个reactive声明的对象，同时将这个对象的属性都变为ref的响应式，并且修改单个ref的属性的时候，reactive声明的对象对应的属性 也会改变</font>**
 
 toRef就是让指定的单个属性变为响应式:`let namesingle = toRef(person,'name')`,和toRefs一样的效果
+
+## 9.计算属性
+
+```v
+<script setup name="Person" lang="ts">
+  import { ref,computed } from 'vue'
+  import { NInput } from 'naive-ui'
+  const firstname = ref('')
+  const lastName = ref('')
+  //这样定义的计算属性，只是可读，不支持修改
+  let fullName = computed(()=>{
+    return firstname.value.slice(0,1).toUpperCase() + lastName.value
+  })
+</script>
+```
+
+计算属性:**会有缓存，对应的数据变化了，计算属性会自动重新计算**
+
+![](assets/计算属性.png)
+
+计算属性本质上也是一个ref
+
+```v
+<script setup name="Person" lang="ts">
+  import { ref,computed } from 'vue'
+  import { NInput, NButton } from 'naive-ui'
+  let firstname = ref('')
+  let lastName = ref('')
+  //这样定义的计算属性，只是可读，不支持修改
+  let fullName = computed({
+    get(){
+       return firstname.value +'-'+ lastName.value
+    },
+    set(val){
+      const [first,last] = val.split('-')
+      console.log(first,last)
+      firstname.value = first
+      lastName.value = last
+    }
+    
+  })
+  function changeName(){
+    fullName.value = '王-小王'
+  }
+  console.log(fullName)
+</script>
+```
 
 
