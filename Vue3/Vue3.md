@@ -384,13 +384,33 @@ toRef就是让指定的单个属性变为响应式:`let namesingle = toRef(perso
       firstname.value = first
       lastName.value = last
     }
-    
+
   })
   function changeName(){
     fullName.value = '王-小王'
   }
   console.log(fullName)
 </script>
+```
+
+## 10.watch监听
+
+作用:监视数据的变化
+
+特点:Vue3中的watch只能监视以下**四种数据**
+
+1. ref定义的数据
+
+2. reactive定义的数据
+
+3. 函数返回一个值(getter函数)
+
+4. 一个包含上述内容的数组
+
+### 情况一:watch监听ref定义的基本类型的数据
+
+```v
+
 ```
 
 
