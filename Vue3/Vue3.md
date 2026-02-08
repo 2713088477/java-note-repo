@@ -410,7 +410,81 @@ toRef就是让指定的单个属性变为响应式:`let namesingle = toRef(perso
 ### 情况一:watch监听ref定义的基本类型的数据
 
 ```v
-
+<template>
+  <div class="main">
+    <h2>sum的值: {{ sum }}</h2>
+    <button @click="add">sum++</button>   
+  </div>
+</template>
+<script setup name="Person" lang="ts">
+import { ref,watch } from 'vue'
+let sum = ref(0)
+function add(){
+  sum.value++
+}
+const stopWatch = watch(sum, (newValue, oldValue) => {
+  console.log(`sum: ${oldValue} -> ${newValue}`)
+  if(newValue > 10){
+    stopWatch()//停止watch
+  }
+})
+</script>
 ```
+
+<font color="red">注意两点:1.watch里面第一个参数直接写ref声明的对象 2.如何停止监视</font>
+
+### 情况二:watch监听ref定义的对象类型的数据
+
+**如果不配置watch监听配置项，只能监听对象的地址发生变化的时候**
+
+```v
+<template>
+  <div class="main">
+      <h2>姓名:{{ person.name }} 年龄:{{ person.age }}</h2>
+      <button @click="changName">修改姓名</button>
+      <button @click="changAge">修改年龄</button>
+      <button @click="changPerson">修改人</button>
+  </div>
+</template>
+<script setup name="Person" lang="ts">
+import { ref,watch } from 'vue'
+let person = ref({
+  name:'张三',
+  age:20
+})
+function changName(){
+  person.value.name +='~'
+}
+function changAge(){
+  person.value.age +=1
+}
+function changPerson(){
+  person.value = {
+    name:'李四',
+    age:22
+  }
+}
+watch(person,(newValue,oldValue)=>{
+  console.log(newValue,oldValue)//只有点击修改人的时候才会触发这个打印
+})
+
+</script>
+```
+
+**配置watch的深度监听**
+
+```v
+watch(person,(newValue,oldValue)=>{
+
+  console.log(newValue,oldValue)
+
+},{deep:true})
+```
+
+但是会出现一个现象，就是newValue和oldValue在点击修改姓名和修改年龄的时候，是一个值
+
+![](assets/watch的新旧参数.png)
+
+**newValue和oldValue指向的是同一个地址**
 
 
