@@ -487,4 +487,41 @@ watch(person,(newValue,oldValue)=>{
 
 **newValue和oldValue指向的是同一个地址**
 
+### 情况三:watch监听reactive定义的对象类型的数据
+
+**<font color="red">默认开启深度监视，且关不掉</font>**
+
+```v
+<template>
+  <div class="main">
+      <h2>姓名:{{ person.name }} 年龄:{{ person.age }}</h2>
+      <button @click="changName">修改姓名</button>
+      <button @click="changAge">修改年龄</button>
+      <button @click="changPerson">修改人</button>
+  </div>
+</template>
+<script setup name="Person" lang="ts">
+import { reactive,watch } from 'vue'
+let person = reactive({
+  name:'张三',
+  age:20
+})
+function changName(){
+  person.name +='~'
+}
+function changAge(){
+  person.age +=1
+}
+function changPerson(){
+  Object.assign(person,{name:'李四',age:80})
+}
+watch(person,(newValue,oldValue)=>{
+  console.log(newValue,oldValue)//三个按钮都会触发这个打印
+},{deep:true})
+
+</script>
+```
+
+
+
 
