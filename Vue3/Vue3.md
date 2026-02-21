@@ -522,6 +522,108 @@ watch(person,(newValue,oldValue)=>{
 </script>
 ```
 
+### 情况四:监视ref或reactive定义的【对象类型】数据中的<font color="red">某个属性</font>,注意点如下:
 
+1.若该属性不是【对象类型】，需要写成函数形式
+
+```v
+<template>
+  <div class="main">
+      <h2>姓名:{{ person.name }} 年龄:{{ person.age }}</h2>
+      <button @click="changName">修改姓名</button>
+      <button @click="changAge">修改年龄</button>
+      <button @click="changPerson">修改人</button>
+  </div>
+</template>
+<script setup name="Person" lang="ts">
+import { reactive,watch } from 'vue'
+let person = reactive({
+  name:'张三',
+  age:20
+})
+function changName(){
+  person.name +='~'
+}
+function changAge(){
+  person.age +=1
+}
+function changPerson(){
+  Object.assign(person,{name:'李四',age:80})
+}
+watch(()=>person.name,(newValue,oldValue)=>{
+  console.log('name变化了',newValue,oldValue)
+})
+</script>
+```
+
+2.若该属性值依然是【对象类型】，可直接编，也可写成函数，不过建议写成函数
+
+```v
+<template>
+  <div class="main">
+      <h2>姓名:{{ person.name }} 年龄:{{ person.age }}</h2>
+      <h2>车:{{ person.car.c1 }},{{ person.car.c2 }}</h2>
+      <button @click="changName">修改姓名</button>
+      <button @click="changAge">修改年龄</button>
+      <button @click="changPerson">修改人</button>
+      <button @click="changeC1">修改第一辆车</button>
+      <button @click="changeC2">修改第二辆车</button>
+      <button @click="changeCar">修改整辆车</button>
+  </div>
+</template>
+<script setup name="Person" lang="ts">
+import { reactive,watch } from 'vue'
+let person = reactive({
+  name:'张三',
+  age:20,
+  car:{
+    c1:'奔驰',
+    c2:'宝马'
+  }
+})
+function changName(){
+  person.name +='~'
+}
+function changAge(){
+  person.age +=1
+}
+function changPerson(){
+  Object.assign(person,{name:'李四',age:80})
+}
+function changeC1(){
+  person.car.c1 = '奥迪'
+}
+function changeC2(){
+  person.car.c2 = '大众'
+}
+function changeCar(){
+  person.car = {c1:'雅迪',c2:'爱玛'}
+}
+// watch(()=>person.name,(newValue,oldValue)=>{
+//   console.log('name变化了',newValue,oldValue)
+// })
+
+//这样监视，changeC1和changeC2会触发，但是changeCar不会触发，彻底改变了那个对象
+watch(person.car,(newValue,oldValue)=>{ 
+  console.log('car变化了',newValue,oldValue)
+})
+</script>
+```
+
+```v
+watch(()=>person.car,(newValue,oldValue)=>{
+  console.log('car变化了',newValue,oldValue)
+})
+```
+
+如果用函数式的写法，监听的是对象的地址，如果要监视具体值，需要配置深度监视
+
+<font color="red">结论:</font> 监视对象里的属性，最好写函数式，注意点:若是监视的是一个对象里面的一个对象，又不仅要监视这个地址值，需要手动开启深度监视
+
+```v
+watch(()=>person.car,(newValue,oldValue)=>{
+  console.log('car变化了',newValue,oldValue)
+},{deep:true})
+```
 
 
