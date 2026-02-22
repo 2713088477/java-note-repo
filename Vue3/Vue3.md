@@ -626,4 +626,53 @@ watch(()=>person.car,(newValue,oldValue)=>{
 },{deep:true})
 ```
 
+### 情况五:监视上述的多个数据
+
+```v
+<template>
+  <div class="main">
+      <h2>姓名:{{ person.name }} 年龄:{{ person.age }}</h2>
+      <h2>车:{{ person.car.c1 }},{{ person.car.c2 }}</h2>
+      <button @click="changName">修改姓名</button>
+      <button @click="changAge">修改年龄</button>
+      <button @click="changPerson">修改人</button>
+      <button @click="changeC1">修改第一辆车</button>
+      <button @click="changeC2">修改第二辆车</button>
+      <button @click="changeCar">修改整辆车</button>
+  </div>
+</template>
+<script setup name="Person" lang="ts">
+import { reactive,watch } from 'vue'
+let person = reactive({
+  name:'张三',
+  age:20,
+  car:{
+    c1:'奔驰',
+    c2:'宝马'
+  }
+})
+function changName(){
+  person.name +='~'
+}
+function changAge(){
+  person.age +=1
+}
+function changPerson(){
+  Object.assign(person,{name:'李四',age:80})
+}
+function changeC1(){
+  person.car.c1 = '奥迪'
+}
+function changeC2(){
+  person.car.c2 = '大众'
+}
+function changeCar(){
+  person.car = {c1:'雅迪',c2:'爱玛'}
+}
+watch([()=> person.name,()=>person.car.c1],(newValue,oldValue)=>{
+  console.log(newValue,oldValue)
+})
+</script>
+```
+
 
