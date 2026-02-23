@@ -675,4 +675,66 @@ watch([()=> person.name,()=>person.car.c1],(newValue,oldValue)=>{
 </script>
 ```
 
+## 11.watchEffect
+
+**watchEffect特点:**
+
+> 1.立即运行这个函数
+> 
+> 2.自动监视回调里面依赖的响应式数据，并在依赖更改时重新执行该函数
+
+代码:
+
+```v
+<template>
+  <div class="main">
+      <h2>当水温到达120摄氏度,水位到达20cm的时候,给服务器发请求</h2>
+      <h2>水温:{{ temprature }}</h2>
+      <h2>水位:{{ height }}</h2>
+      <n-space>
+        <n-button type="info" @click="addtemp">
+          水温+10
+        </n-button>
+        <n-button type="info" @click="addHeight">
+          水位+10
+        </n-button>
+      </n-space>
+
+  </div>
+</template>
+<script setup lang="ts">
+import {ref, watch, watchEffect} from 'vue'
+import {NButton,NSpace,useMessage} from "naive-ui";
+const message = useMessage()
+let temprature = ref(20)
+let height = ref(0)
+const addtemp = ()=>{
+  temprature.value += 10
+}
+const addHeight = ()=>{
+  height.value+=10
+}
+// watch([temprature,height],(newValue) => {
+//   let [newTemp, newHeight] = newValue;
+//   if(newTemp>=120 || newHeight>=20){
+//     message.info('给服务器整点汉堡',{keepAliveOnHover:true})
+//   }
+// })
+watchEffect(()=>{
+  if(temprature.value >= 120 || height.value>=20){
+    message.info(`给服务器整点汉堡${temprature.value}`,{keepAliveOnHover:true})
+  }
+})
+
+</script>
+```
+
+**watch对比watchEffect**
+
+> 1.都能监听响应式数据的变化，不同的是监听数据变化的方式不同
+> 
+> 2.watch：要明确指出监视的数据
+> 
+> 3.watchEffect:不用明确指出监视的数据（函数中用到哪些属性，那就监视哪些属性）
+
 
