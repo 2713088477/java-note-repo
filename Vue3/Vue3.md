@@ -737,4 +737,178 @@ watchEffect(()=>{
 > 
 > 3.watchEffect:不用明确指出监视的数据（函数中用到哪些属性，那就监视哪些属性）
 
+## 12.标签的ref属性
+
+> - 用在普通Dom标签上，获取的是Dom节点
+> 
+> - 用在组件标签上，获取的是组件实例对象
+
+**用在普通Dom标签上**
+
+```v
+<template>
+  <div class="main">
+    <h2 ref="language">Java</h2>
+    <h2>张峻豪</h2>
+    <button @click="log">点我打印语言</button>
+  </div>
+</template>
+
+<script setup lang="ts">
+import {ref} from "vue";
+let language = ref();
+function log(){
+  console.log(language.value);
+}
+</script>
+
+<style scoped>
+.main{
+  height: 200px;
+  padding: 10px;
+  border-radius: 10px;
+  background-color: skyblue;
+}  
+</style>
+```
+
+标签的ref属性就是为了更加方便地获取这个对象
+
+![](assets/标签的ref属性.png)
+
+这个data-v-xxxxxx是因为我们的vue中style标签加了scoped值，是局部样式
+
+**用在组件标签上**
+
+App.vue
+
+```v
+<template>
+  <n-config-provider>
+    <n-message-provider>
+      <Person ref="peo"/>
+      <n-button type="primary" @click="logPerson">
+        点我打印Person组件
+      </n-button>
+    </n-message-provider>
+  </n-config-provider>
+</template>
+
+
+<script lang="ts" setup>
+  import {NConfigProvider,NMessageProvider,NButton} from "naive-ui";
+  import Person from './components/Person.vue';
+  import {ref} from 'vue';
+  let peo = ref()
+  const logPerson = () => {
+    console.log(peo.value)//为啥是undefined
+  }
+</script>
+
+<style>
+
+</style>
+```
+
+Person.vue
+
+```v
+<template>
+  <div class="main">
+    <h2 ref="language">Java</h2>
+    <h2>张峻豪</h2>
+    <button @click="log">点我打印语言</button>
+  </div>
+</template>
+
+<script setup lang="ts">
+import {ref} from "vue";
+let language = ref();
+function log(){
+  console.log(language.value);
+}
+let name = ref('donk')
+let age = ref(20);
+</script>
+<style scoped>
+.main{
+  height: 200px;
+  padding: 10px;
+  border-radius: 10px;
+  background-color: skyblue;
+}  
+</style>
+```
+
+在App.vue中是看不到子组件的ref数据的
+
+![](assets/不能够主动看子组件的数据.png)
+
+<font color="red">子组件需要自己定义想要父组件看到哪些数据</font>
+
+```v
+<script setup lang="ts">
+import {ref,defineExpose} from "vue";
+let language = ref();
+function log(){
+  console.log(language.value);
+}
+let name = ref('donk')
+let age = ref(20);
+defineExpose({age,name});
+</script>
+```
+
+![](assets/子组件暴露的ref.png)
+
+## 13.回顾TS中的接口，泛型，自定义类型
+
+src/types/index.ts
+
+```typescript
+// 定义一个接口,用于限制person对象的具体属性
+export interface PersonInter{
+    id:string,
+    name:string,
+    age:number
+}
+// 自定义类型
+// export type Persons = Array<PersonInter>
+export type Persons = PersonInter[]
+
+
+```
+
+src/components/Person.vue
+
+```v
+<template>
+  <div class="main">
+
+  </div>
+</template>
+
+<script setup lang="ts">
+import {type PersonInter,type Persons} from '@/types'
+let person:PersonInter={
+  id:'518456456489789',
+  name:'张峻豪',
+  age:20
+}
+let personList:Persons = [
+  {id:'123123',name:'123',age:13},
+  {id:'123456789',name:'123456789',age:14},
+  {id:'123456789',name:'123456789',age:14},
+]
+</script>
+<style scoped>
+.main{
+  height: 200px;
+  padding: 10px;
+  border-radius: 10px;
+  background-color: skyblue;
+}  
+</style>
+```
+
 
