@@ -875,8 +875,6 @@ export interface PersonInter{
 // 自定义类型
 // export type Persons = Array<PersonInter>
 export type Persons = PersonInter[]
-
-
 ```
 
 src/components/Person.vue
@@ -909,6 +907,135 @@ let personList:Persons = [
   background-color: skyblue;
 }  
 </style>
+```
+
+## 14.props的使用
+
+ts的小技巧
+
+```v
+// 定义一个接口,用于限制person对象的具体属性
+export interface PersonInter{
+    id:string,
+    name:string,
+    age:number,
+    x?:number,//表示这个参数可有可无
+}
+// 自定义类型
+// export type Persons = Array<PersonInter>
+export type Persons = PersonInter[]
+```
+
+
+
+父组件:App.vue
+
+```v
+<template>
+  <n-config-provider>
+    <n-message-provider>
+      <Person a="哈哈哈"/>
+    </n-message-provider>
+  </n-config-provider>
+</template>
+
+
+<script lang="ts" setup>
+  import {NConfigProvider,NMessageProvider,NButton} from "naive-ui";
+  import Person from './components/Person.vue';
+
+</script>
+
+<style>
+
+</style>
+```
+
+子组件:Person.vue
+
+```v
+<template>
+  <div class="main">
+    <h2>{{a}}</h2>
+
+  </div>
+</template>
+
+<script setup lang="ts">
+import {defineProps} from 'vue'
+
+//defineProps(['a']) //模板中可以直接接收到,但是在脚本中无法用
+let data = defineProps(['a'])//这样才可以在脚本中使用
+console.log(data)
+</script>
+<style scoped>
+.main{
+  height: 200px;
+  padding: 10px;
+  border-radius: 10px;
+  background-color: skyblue;
+}  
+</style>
+```
+
+
+
+接收+限制类型
+
+```v
+<template>
+  <div class="main">
+
+
+  </div>
+</template>
+
+<script setup lang="ts">
+import {defineProps} from 'vue'
+import type {Persons} from "@/types";
+
+//接收+限制类型
+defineProps<{list:Persons}>()
+
+</script>
+<style scoped>
+.main{
+  height: 200px;
+  padding: 10px;
+  border-radius: 10px;
+  background-color: skyblue;
+}  
+</style>
+```
+
+```v
+<script setup lang="ts">
+import {defineProps,withDefaults} from 'vue'
+import type {Persons} from "@/types";
+
+// //接收+限制类型
+// defineProps<{list:Persons}>()
+
+//接收+限制类型+限制必要性+指定默认值
+withDefaults(defineProps<{list?:Persons}>(),{list:()=>[{id:'123213112',name:'蔡徐坤',age:20}]})
+
+</script>
+```
+
+defineXXX是Vue中的宏函数，可以不用引入
+
+```v
+<script setup lang="ts">
+import {withDefaults} from 'vue'
+import type {Persons} from "@/types";
+
+// //接收+限制类型
+// defineProps<{list:Persons}>()
+
+//接收+限制类型+限制必要性+指定默认值
+withDefaults(defineProps<{list?:Persons}>(),{list:()=>[{id:'123213112',name:'蔡徐坤',age:20}]})
+
+</script>
 ```
 
 
