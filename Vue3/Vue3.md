@@ -926,8 +926,6 @@ export interface PersonInter{
 export type Persons = PersonInter[]
 ```
 
-
-
 父组件:App.vue
 
 ```v
@@ -977,8 +975,6 @@ console.log(data)
 }  
 </style>
 ```
-
-
 
 接收+限制类型
 
@@ -1037,5 +1033,27 @@ withDefaults(defineProps<{list?:Persons}>(),{list:()=>[{id:'123213112',name:'蔡
 
 </script>
 ```
+
+## 15.组件的声明周期
+
+【时刻】: 创建、挂载、更新、销毁
+
+【调用特定的函数】
+
+对应的时刻会调用对应的函数
+
+## 16.Vue2声明周期
+
+创建前:beforeCreate() 创建后created()
+
+挂载前:beforeMount() 挂载完毕mounted()
+
+更新前:beforeUpdate() 更新完毕updated()
+
+销毁前:beforeDestroy() 销毁完毕destroyed()
+
+
+
+<font color="red">销毁:当不用这个组件的时候，就会销毁，比如用v-if去判断</font>
 
 
