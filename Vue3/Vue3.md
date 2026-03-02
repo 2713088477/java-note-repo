@@ -1052,8 +1052,16 @@ withDefaults(defineProps<{list?:Persons}>(),{list:()=>[{id:'123213112',name:'蔡
 
 销毁前:beforeDestroy() 销毁完毕destroyed()
 
-
-
 <font color="red">销毁:当不用这个组件的时候，就会销毁，比如用v-if去判断</font>
+
+## 17.Vue3声明周期
+
+创建用**setup**函数代替了
+
+挂载前:onBeforeMount( ()=>{} ) 挂载完毕onMounted(()=>{})
+
+更新前:onBeforeUpdate(()=>{}) 更新完毕onUpdated(()=>{})
+
+卸载前:onBeforeUnmount(()=>{}) 卸载完毕onUnmounted(()=>{})
 
 
