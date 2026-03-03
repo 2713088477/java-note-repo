@@ -1064,4 +1064,88 @@ withDefaults(defineProps<{list?:Persons}>(),{list:()=>[{id:'123213112',name:'蔡
 
 卸载前:onBeforeUnmount(()=>{}) 卸载完毕onUnmounted(()=>{})
 
+## 18.自定义Hooks
+
+来看看没有自定义hooks之前
+
+```v
+<template>
+  <div class="app">
+    <h2> {{ sum }}</h2> <el-button type="primary" @click="add">点击sum +1</el-button>
+    <br>
+    <h2> {{ dogNum }}</h2> <el-button type="primary" @click="addDogNumber">点击dogNum +1</el-button>
+
+  </div>
+</template>
+
+<script setup lang="ts">
+import {ref} from "vue";
+
+let sum = ref(0)
+function add(){
+  sum.value++
+}
+
+let dogNum = ref(0)
+function addDogNumber(){
+  dogNum.value++
+}
+</script>
+<style scoped>
+.app{
+  height: 200px;
+  padding: 10px;
+  border-radius: 10px;
+  background-color: skyblue;
+}  
+</style>
+```
+
+最大的问题就是这些script中的数据依然混合在一起
+
+自定义Hooks之后，让"组合式"这个词发挥了更大的作用
+
+```v
+<script setup lang="ts">
+import useSum from "@/hooks/useSum.ts";
+import useDog from "@/hooks/useDog.ts";
+const {sum,add} = useSum()
+const {dogNum,addDogNumber} = useDog()
+useDog()
+</script>
+```
+
+```v
+import {ref} from "vue";
+
+export default function (){
+    let sum = ref(0)
+    function add(){
+        sum.value++
+    }
+    return {sum,add}
+}
+
+
+```
+
+```v
+import {ref} from "vue";
+
+export default function (){
+    let dogNum = ref(0)
+    function addDogNumber(){
+        dogNum.value++
+    }
+    return {dogNum,addDogNumber}
+}
+
+```
+
+
+
+**注意:** hooks一般用useXXX开头去命名这个ts文件，这里面也可以写钩子函数
+
+![](assets/hooks.png)
+
 
