@@ -1125,8 +1125,6 @@ export default function (){
     }
     return {sum,add}
 }
-
-
 ```
 
 ```v
@@ -1139,13 +1137,16 @@ export default function (){
     }
     return {dogNum,addDogNumber}
 }
-
 ```
-
-
 
 **注意:** hooks一般用useXXX开头去命名这个ts文件，这里面也可以写钩子函数
 
 ![](assets/hooks.png)
+
+## 19.路由
+
+1) 路由就是一组key-value的对应关系（像是url和view的对应关系）
+
+2) 多个路由，需要经过路由器的管理
 
 
