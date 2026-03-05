@@ -1149,4 +1149,4 @@ export default function (){
 
 2) 多个路由，需要经过路由器的管理
 
-
+路由中有一个routerLink组件，可以写to属性(去哪个路径)和active-class(被激活时的class)
