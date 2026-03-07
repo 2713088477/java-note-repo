@@ -1160,5 +1160,37 @@ export default function (){
 > 1) 路由组件通常存放在pages或views文件夹，一般组件通常放在components文件夹
 > 2) 通过点击导航，在视觉上"消失"了的路由组件，默认是被**卸载**掉的，需要的时候再去**挂载**
 
+### 2.路由的两种工作模式
+
+
+
+
+
+1.`history`模式 
+
+优点:url更加美观，不带有`#`,更接近传统的网站URL
+
+缺点:后期项目上限，需要服务端配合处理路径问题，否则刷新会有404错误
+
+```v
+const router = createRouter({
+	history:createWebHistory()
+})
+```
+
+
+
+2.`hash`模式
+
+优点:兼容性更好，因为不需要服务器端处理路径
+
+缺点:URL带有`#`不太美观，且在`SEO`优化方面相对较差
+
+```v
+const router = createRouter({
+	history:createWebHashHistory()
+})
+```
+
 
 
