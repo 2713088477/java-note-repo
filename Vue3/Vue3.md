@@ -1192,5 +1192,13 @@ const router = createRouter({
 })
 ```
 
+### 3.to的两种写法
 
+第一种写法:
+
+`<router-link to="/home">主页</router-link>`
+
+第二种写法:
+
+`<router-link :to="{path:'/home'}">Home<router-link>`
 
