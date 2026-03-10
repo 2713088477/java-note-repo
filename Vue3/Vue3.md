@@ -1202,3 +1202,93 @@ const router = createRouter({
 
 `<router-link :to="{path:'/home'}">Home<router-link>`
 
+### 4.命名路由
+
+一言以蔽之:`在路由配置规则route中可以给每个路由配置name属性，<RouterLink :to="{name:xxx}"/>也可以实现跳转的效果`
+
+
+
+### 5.嵌套路由
+
+嵌套路由的定义很简单，就是在一个路由中由又有路由规则，此时就形成了路由嵌套，配置其实很简单,`在配置routes的规则对象时再指定一个children属性就实现了`
+
+演示代码:
+
+```v
+export const routes: Array<RouteRecordRaw> = [
+  {
+    path: '/basic',
+    name: '首页',
+    meta: { access: ACCESS_ENUM.USER },
+    redirect: '/basic/index',
+    component: () => import('@/layouts/BasicLayout.vue'),
+    children: [
+      {path: 'index',name:'主页',component: () => import('@/views/R1.vue'),},
+      {path: 'ViewProblem',name:'浏览题目',component: () => import('@/views/problem/ViewProblem.vue')},
+      {path: 'ChallengeProblem',name:'挑战题目',component: () => import('@/views/problem/ChallengeProblem.vue')},
+      {path: 'manageProblem',name:'管理题目',component: () => import('@/views/problem/ManageProblem.vue')},
+      {path: 'addProblem',name:'新增题目',component: () => import('@/views/problem/AddOrUpdateProblem.vue')},
+      {path: 'updateProblem',name:'修改题目',component: () => import('@/views/problem/AddOrUpdateProblem.vue')},
+      {path: 'problem',name:'题目模块',component: () => import('@/views/R2.vue'),}
+    ]
+
+  },
+  {
+    path: '/origin',
+    name: '原始布局',
+    component: () => import('@/layouts/OriginalLayout.vue'),
+    children:[
+      {path:'login',name:'登录页面',component:()=> import('@/views/users/Login.vue')}
+
+    ]
+  },
+]
+```
+
+### 6.query传参
+
+query传参就是在路由中传递query参数。
+
+传参的两种写法:
+
+```v
+<!-- 第一种写法 -->
+<RouterLink :to="`/news/detail?id=${news.id}&title=${news.title}&content=${news.content}`">
+  新闻详情
+</RouterLink>
+
+<!-- 第二种写法 -->
+<RouterLink
+  :to="{
+    path: '/news/detail',
+    query: {
+      id: news.id,
+      title: news.title,
+      content: news.content
+    }
+  }"
+>
+  新闻详情
+</RouterLink>
+```
+
+接收参数的写法:
+
+```v
+<template>
+  <ul class="news-list">
+    <li>编号：{{ query.id }}</li>
+    <li>标题：{{ query.title }}</li>
+    <li>内容：{{ query.content }}</li>
+  </ul>
+</template>
+
+<script setup lang="ts" name="About">
+import { toRefs } from 'vue'
+import { useRoute } from 'vue-router'//典型的hooks
+
+let route = useRoute()	//得到route对象
+let { query } = toRefs(route)	//解构赋值为了不让一个响应式的对象失去响应式，需要roRefs(响应式对象)
+</script>
+```
+
