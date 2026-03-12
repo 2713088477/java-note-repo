@@ -1292,3 +1292,36 @@ let { query } = toRefs(route)	//解构赋值为了不让一个响应式的对象
 </script>
 ```
 
+### 7.params参数
+
+1.传递参数
+
+```v
+<!-- 跳转并携带params参数（to的字符串写法） -->
+<RouterLink :to="`/news/detail/001/新闻001/内容001`">{{news.title}}</RouterLink>
+
+<!-- 跳转并携带params参数（to的对象写法） -->
+<RouterLink
+    :to="{
+    name: 'xiang', //用name跳转
+    params: {
+    id: news.id,
+    title: news.title,
+    content: news.title
+    }
+}"
+></RouterLink>
+```
+
+2.接收参数
+
+```v
+import {useRoute} from 'vue-router'
+const route = useRoute()
+// 打印params参数
+console.log(route.params)
+```
+
+> 备注1:传递`params`参数时，若使用to的对象写法，必须使用`name`配置项，不能用`path`
+>
+> 备注2:传递`params`参数时，需要提前在规则中占位
