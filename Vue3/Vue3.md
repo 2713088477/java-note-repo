@@ -1325,3 +1325,27 @@ console.log(route.params)
 > 备注1:传递`params`参数时，若使用to的对象写法，必须使用`name`配置项，不能用`path`
 >
 > 备注2:传递`params`参数时，需要提前在规则中占位
+
+### 路由的props配置
+
+作用:让路由组件更方便的收到参数(可以将路由参数作为`props`传给组件)
+
+```v
+{
+  name: 'xiang',
+  path: 'detail/:id/:title/:content',
+  component: Detail,
+
+  // props的对象写法，作用：把对象中的每一组key-value作为props传给Detail组件
+  // props: {a: 1, b: 2, c: 3},
+
+  // props的布尔值写法，作用：把收到了每一组params参数，作为props传给Detail组件
+  // props: true
+
+  // props的函数写法，作用：把返回的对象中每一组key-value作为props传给Detail组件
+  props(route) {
+    return route.query
+  }
+}
+```
+
