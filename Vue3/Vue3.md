@@ -1362,5 +1362,26 @@ console.log(route.params)
 
 `<RouterLink replace ......>News</RouterLink>`
 
+### 10.编程式路由导航
+
+编程式路由导航就是在`<script></script>`标签中实现路由的跳转
+
+代码:
+
+```v
+<script setup lang="ts" name="Home">
+import { onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+
+const router = useRouter() //用这个对象就可以实现跳转了
+
+onMounted(() => {
+  setTimeout(() => {
+    router.push('/news') //<routerLink/>中to可以怎么写，这个push中就可以怎么写
+  }, 3000)
+})
+</script>
+```
+
 
 
