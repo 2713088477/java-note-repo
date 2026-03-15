@@ -1326,7 +1326,7 @@ console.log(route.params)
 >
 > 备注2:传递`params`参数时，需要提前在规则中占位
 
-### 路由的props配置
+### 8.路由的props配置
 
 作用:让路由组件更方便的收到参数(可以将路由参数作为`props`传给组件)
 
@@ -1348,4 +1348,19 @@ console.log(route.params)
   }
 }
 ```
+
+### 9.replace属性
+
+1.作用:控制路由跳转时操作浏览器历史记录的模式
+
+2.浏览器的历史记录有两种写入方式:分别为`push`和`replace`:
+
+- `push`是追加历史记录(默认值)
+- `replace`是替换当前记录
+
+3.开启`replace`模式:
+
+`<RouterLink replace ......>News</RouterLink>`
+
+
 
