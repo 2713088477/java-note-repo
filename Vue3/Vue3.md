@@ -1402,3 +1402,20 @@ onMounted(() => {
 
 集中式状态(数据管理):组件之间共享的数据
 
+### 2.创建pinia环境
+
+代码:
+
+```v
+import { createApp } from 'vue'
+//1.引入
+import { createPinia } from 'pinia'
+import App from './App.vue'
+//2.创建
+const pinia = createPinia()
+const app = createApp(App)
+//3.使用
+app.use(pinia)
+app.mount('#app')
+```
+
