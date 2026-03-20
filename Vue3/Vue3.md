@@ -1419,3 +1419,35 @@ app.use(pinia)
 app.mount('#app')
 ```
 
+### 3.定义store
+
+代码:
+
+定义store
+
+```v
+import { defineStore } from 'pinia'
+//第一个参数应该独一无二
+//第二个有点像setup函数
+export const useCounterStore = defineStore('counter', () => {
+  const count = ref(0)
+  const name = ref('Eduardo')
+  const doubleCount = computed(() => count.value * 2)
+  function increment() {
+    count.value++
+  }
+
+  return { count, name, doubleCount, increment }
+})
+```
+
+使用store
+
+```v
+<script setup>
+import { useCounterStore } from '@/stores/counter'
+// 在组件内部的任何地方均可以访问变量 `store` ✨
+const store = useCounterStore()
+</script>
+```
+
