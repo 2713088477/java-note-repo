@@ -1451,3 +1451,25 @@ const store = useCounterStore()
 </script>
 ```
 
+## 4.storeToRefs
+
+我们需要对一个pinia的hook解构赋值时,不建议用toRefs()，因为会把pinia的所有数据和方法都暴露,建议用storeToRefs()
+
+```v
+<script setup lang="ts" name="Count">
+import { ref, reactive, toRefs } from 'vue';
+import { storeToRefs } from 'pinia';
+import { useCountStore } from '@/store/count';
+
+// 使用 useCountStore 获取 count 相关的 store 实例
+const countStore = useCountStore();
+
+// storeToRefs 只会将 store 中的响应式数据（state）转换为 refs，
+// 不会对方法进行 ref 包裹，这样可以方便地解构使用状态
+const { sum, school, address } = storeToRefs(countStore);
+
+// 示例：打印解构后的值（可选）
+// console.log('!!!!', storeToRefs(countStore));
+</script>
+```
+
