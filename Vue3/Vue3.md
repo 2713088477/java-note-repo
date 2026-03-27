@@ -1451,7 +1451,7 @@ const store = useCounterStore()
 </script>
 ```
 
-## 4.storeToRefs
+### 4.storeToRefs
 
 我们需要对一个pinia的hook解构赋值时,不建议用toRefs()，因为会把pinia的所有数据和方法都暴露,建议用storeToRefs()
 
@@ -1472,4 +1472,10 @@ const { sum, school, address } = storeToRefs(countStore);
 // console.log('!!!!', storeToRefs(countStore));
 </script>
 ```
+
+### 5.小技巧
+
+避免空指针异常，可以这样做
+
+`talkList:JSON.parse(localStorage.getItem('talkList') as string) || []`
 
