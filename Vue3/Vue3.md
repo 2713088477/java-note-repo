@@ -1537,3 +1537,74 @@ defineProps(['car', 'sendToy'])
 
 ```
 
+### 2.custom-event
+
+自定义事件:`子传父`
+
+父组件
+
+```v
+<template>
+  <div class="father">
+    <h3>父组件</h3>
+    <h4 v-show="toy">子给的玩具：{{ toy }}</h4>
+    <!-- 给子组件 Child 绑定事件 -->
+    <Child @send-toy="saveToy" />
+  </div>
+</template>
+
+<script setup lang="ts" name="Father">
+import { ref } from 'vue';
+import Child from './Child.vue';
+
+// 声明响应式数据
+const toy = ref<string>('');
+
+// 处理子组件 emit 的事件
+function saveToy(value: string) {
+  console.log('saveToy', value);
+  toy.value = value;
+}
+</script>
+
+<style scoped>
+.father {
+  padding: 16px;
+  border: 2px solid #42b983;
+  margin: 10px;
+}
+</style>
+```
+
+子组件:
+
+```v
+<template>
+  <div class="child">
+    <h3>子组件</h3>
+    <h4>玩具：{{ toy }}</h4>
+    <button @click="emit('send-toy', toy)">测试</button>
+  </div>
+</template>
+
+<script setup lang="ts" name="Child">
+import { ref, defineEmits } from 'vue';
+
+// 响应式数据
+const toy = ref<string>('奥特曼');
+
+// 声明自定义事件（推荐显式声明，提升类型安全 & IDE 提示）
+const emit = defineEmits<{
+  (e: 'send-toy', value: string): void;
+}>();
+</script>
+
+<style scoped>
+.child {
+  padding: 16px;
+  border: 2px solid #35495e;
+  margin: 10px;
+}
+</style>
+```
+
