@@ -1608,3 +1608,78 @@ const emit = defineEmits<{
 </style>
 ```
 
+### 3.mitt
+
+mitt是第三方工具包，可以实现任意组件之间的通信，靠消息的发布订阅来完成。
+
+代码:
+
+某个子组件:
+
+```v
+<template>
+  <div class="child1">
+    <h3>子组件1</h3>
+    <h4>玩具：{{ toy }}</h4>
+    <button @click="emitter.emit('send-toy', toy)">发送玩具</button>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref } from 'vue'
+import emitter from '@/utils/emitter'
+
+// 数据
+let toy = ref('奥特曼')
+</script>
+
+<style scoped>
+.child1 {
+  padding: 20px;
+  background-color: #f0f9ff;
+  border: 1px solid #e0e8f5;
+  border-radius: 8px;
+}
+</style>
+```
+
+另外某个子组件:
+
+```v
+<template>
+  <div class="child2">
+    <h3>子组件2</h3>
+    <p>电脑品牌：{{ computer }}</p>
+    <p>收到的玩具：{{ toy }}</p>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, onUnmounted } from 'vue'
+import emitter from '@/utils/emitter'
+
+// 数据
+let computer = ref('联想')
+let toy = ref('')
+
+// 绑定 send-toy 事件
+emitter.on('send-toy', (value: any) => {
+  toy.value = value
+})
+
+// 组件卸载时解绑，防止内存泄漏
+onUnmounted(() => {
+  emitter.off('send-toy')
+})
+</script>
+
+<style scoped>
+.child2 {
+  padding: 20px;
+  background-color: #f5f7fa;
+  border: 1px solid #e4e7eb;
+  border-radius: 8px;
+}
+</style>
+```
+
