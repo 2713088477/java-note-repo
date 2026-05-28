@@ -406,3 +406,111 @@ public static void main(String[] args) {
 }
 ```
 
+## 13.线程池参数
+
+线程池的构造方法:
+
+```java
+public ThreadPoolExecutor(int corePoolSize,
+                          int maximumPoolSize,
+                          long keepAliveTime,
+                          TimeUnit unit,
+                          BlockingQueue<Runnable> workQueue,
+                          ThreadFactory threadFactory,
+                          RejectedExecutionHandler handler) {
+    if (corePoolSize < 0 ||
+        maximumPoolSize <= 0 ||
+        maximumPoolSize < corePoolSize ||
+        keepAliveTime < 0)
+        throw new IllegalArgumentException();
+    if (workQueue == null || threadFactory == null || handler == null)
+        throw new NullPointerException();
+    this.corePoolSize = corePoolSize;
+    this.maximumPoolSize = maximumPoolSize;
+    this.workQueue = workQueue;
+    this.keepAliveTime = unit.toNanos(keepAliveTime);
+    this.threadFactory = threadFactory;
+    this.handler = handler;
+
+    String name = Objects.toIdentityString(this);
+    this.container = SharedThreadContainer.create(name);
+}
+```
+
+具体执行的流程图：
+
+![](assets\线程池参数.png)
+
+
+
+代码验证:
+
+```java
+import java.util.concurrent.*;
+
+public class ThreadPoolExecutorDemo {
+    static class Task implements Runnable{
+        private int id;
+        public Task(int id){
+            this.id = id;
+        }
+        @Override
+        public void run() {
+            System.out.println(String.format("id为%d的正在执行任务",id));
+            try {
+                TimeUnit.SECONDS.sleep(2);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+    public static void main(String[] args) {
+        ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(10, 30, 0, TimeUnit.SECONDS,
+                new ArrayBlockingQueue<>(10)
+        );
+        for(int i=0;i<30;i++){
+            Task task = new Task(i);
+            threadPoolExecutor.execute(task);
+
+        }
+        threadPoolExecutor.shutdown();
+    }
+}
+```
+
+## 14.Tomcat线程池和jdk线程池的区别
+
+在jdk中，如果写了以下的代码:
+
+```java
+ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(10, 30, 0, TimeUnit.SECONDS,
+                new ArrayBlockingQueue<>(10)
+        );
+```
+
+此时线程池有几个线程？答案是0个，需要我们自己调用`threadPoolExecutor.prestartCoreThread();` 才能提前启动核心线程
+
+
+
+但是在tomcat中线程池的构造函数下面加了这样一行:
+
+```java
+public ThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit,
+                          BlockingQueue<Runnable> workQueue, ThreadFactory threadFactory, RejectedExecutionHandler handler) {
+    if (corePoolSize < 0 || maximumPoolSize <= 0 || maximumPoolSize < corePoolSize || keepAliveTime < 0) {
+        throw new IllegalArgumentException();
+    }
+    if (workQueue == null || threadFactory == null || handler == null) {
+        throw new NullPointerException();
+    }
+    this.corePoolSize = corePoolSize;
+    this.maximumPoolSize = maximumPoolSize;
+    this.workQueue = workQueue;
+    this.keepAliveTime = unit.toNanos(keepAliveTime);
+    this.threadFactory = threadFactory;
+    this.handler = handler;
+
+    prestartAllCoreThreads();//tomcat中提前创建好了所有的核心线程
+}
+```
+
