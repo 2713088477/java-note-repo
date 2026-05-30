@@ -738,3 +738,181 @@ private Runnable getTask() {
 }
 ```
 
+## 18.线程池淘汰策略-线程异常
+
+先看代码:
+
+```java
+final void runWorker(Worker w) {
+    Thread wt = Thread.currentThread();
+    Runnable task = w.firstTask;
+    w.firstTask = null;
+    w.unlock(); // allow interrupts
+    boolean completedAbruptly = true;
+    try {
+        while (task != null || (task = getTask()) != null) {
+            w.lock();
+            // If pool is stopping, ensure thread is interrupted;
+            // if not, ensure thread is not interrupted.  This
+            // requires a recheck in second case to deal with
+            // shutdownNow race while clearing interrupt
+            if ((runStateAtLeast(ctl.get(), STOP) ||
+                 (Thread.interrupted() &&
+                  runStateAtLeast(ctl.get(), STOP))) &&
+                !wt.isInterrupted())
+                wt.interrupt();
+            try {
+                beforeExecute(wt, task);
+                try {
+                    task.run();
+                    afterExecute(task, null);
+                } catch (Throwable ex) {
+                    afterExecute(task, ex);
+                    throw ex;
+                }
+            } finally {
+                task = null;
+                w.completedTasks++;
+                w.unlock();
+            }
+        }
+        completedAbruptly = false; //正常执行完这个标记为false
+    } finally {
+        processWorkerExit(w, completedAbruptly);//如果异常，这个completedAbruptly = true
+    }
+}
+```
+
+```java
+private void processWorkerExit(Worker w, boolean completedAbruptly) {
+    if (completedAbruptly) // If abrupt, then workerCount wasn't adjusted
+        decrementWorkerCount();
+
+    final ReentrantLock mainLock = this.mainLock;
+    mainLock.lock();
+    try {
+        completedTaskCount += w.completedTasks;
+        workers.remove(w);
+    } finally {
+        mainLock.unlock();
+    }
+
+    tryTerminate();
+
+    int c = ctl.get();
+    if (runStateLessThan(c, STOP)) {
+        if (!completedAbruptly) {
+            int min = allowCoreThreadTimeOut ? 0 : corePoolSize;
+            if (min == 0 && ! workQueue.isEmpty())
+                min = 1;
+            if (workerCountOf(c) >= min)
+                return; // replacement not needed
+        }
+        addWorker(null, false);
+    }
+}
+```
+
+这个方法的意思是如果抛了异常，这个线程直接会销毁掉，然后再创建一个线程。
+
+## 19.线程不安全
+
+定义：在多线程编程中，如果多个线程**同时访问同一个共享资源**，并且**没有采取任何保护措施**，导致数据的最终状态**不可预测，不正确**，我们就说这段代码是**线程不安全**的。
+
+**临界资源**：指的是**一次仅允许一个**线程（或进程）访问的共享资源。
+
+## 20.原子性
+
+原子性操作指相应的操作是**单一不可分割的操作**
+
+```java
+i++; //不是原子性操作 读取i,i+1,赋给i
+i = 0; //是原子性操作
+j = i; //不是原子性操作，因为要读取i的值
+```
+
+如何保证原子性？
+
+1.加锁
+
+```java
+public class ThreadUnsafe {
+    private static int stock = 100;
+    static class BuyGoods implements Runnable{
+        @Override
+        public synchronized void run() { //加锁，每次只能一个线程拿到
+            if(stock > 0){
+                stock--;
+            }
+        }
+    }
+    public static void main(String[] args) throws InterruptedException {
+        ExecutorService threadPool = Executors.newFixedThreadPool(10);
+        try {
+            BuyGoods buyGoods = new BuyGoods();
+            for(int i = 0;i < 100;i++){
+                threadPool.execute(buyGoods);
+            }
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }finally {
+            threadPool.shutdown();
+            threadPool.awaitTermination(10, TimeUnit.SECONDS);
+            System.out.println(stock);
+        }
+
+    }
+}
+```
+
+2.利用原子性操作的类
+
+## 21.可见性
+
+可见性是指当多个线程访问同一个变量时，一个线程修改了这个变量的值，其他线程能够立即看得到修改的值。
+
+```java
+import java.util.concurrent.TimeUnit;
+
+public class VisibleTest {
+    private static boolean always = true;
+    public static void main(String[] args) throws InterruptedException {
+        Thread thread = new Thread(() -> {
+            while (always) {
+
+            }
+        });
+        thread.start();
+        TimeUnit.SECONDS.sleep(2);
+        always = false; //程序根本不会停止
+    }
+}
+```
+
+这是因为always子线程相当于创建了一个副本，没有同步到主线程中。
+
+怎么同步呢？
+
+1) synchronized解锁的时候会自动同步
+
+```java
+public class VisibleTest {
+    private static Boolean always = true;
+    public static void main(String[] args) throws InterruptedException {
+        Thread thread = new Thread(() -> {
+            while (always) {
+                synchronized (always) {
+
+                }
+            }
+        });
+        thread.start();
+        TimeUnit.SECONDS.sleep(2);
+        always = false; //程序根本不会停止
+    }
+}
+```
+
+2) volatile
+
