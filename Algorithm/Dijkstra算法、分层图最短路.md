@@ -328,3 +328,115 @@ public class Code03_Solution778 {
 ```
 
 这道题和题目二差不多，就不过多赘述了。
+
+## 扩展题型:分层最短路
+
+分层图最短路，又叫扩点最短路
+
+不把实际位置看做图上的点，而是把<font color="red">实际位置及其状态的组合</font>看做是图上的点，然后搜索bfs或者Dijkstra的过程不变，只是扩了点(分层)而已
+
+原理简单，核心在于<font color="red">如何扩点、如何到达、如何算距离</font>，每个题可能都不一样
+
+## 题目四：获取所有钥匙的最短路径
+
+代码:
+
+```java
+package ZuoVideo64;
+
+//测试链接:https://leetcode.cn/problems/shortest-path-to-get-all-keys/description/
+public class Code04_Solution864 {
+    public static int MAX_M = 30;
+    public static int MAX_N = 30;
+    public static int MAX_K = 6;
+    public static boolean[][][] visit = new boolean[MAX_M][MAX_N][1<<MAX_K];
+    public static int[][] deque = new int[MAX_M*MAX_N*(1<<MAX_K)][3];
+    public static int l,r,row,col,key;
+    public static char[][] arr = new char[MAX_N][MAX_N];
+    public static int[] direction = new int[]{1,0,-1,0,1};
+    public int shortestPathAllKeys(String[] grid) {
+        build(grid);
+        for(int i=0;i<row;i++){
+            for(int j=0;j<col;j++){
+                if(arr[i][j]=='@'){
+                    push(i,j,0);
+                    break;
+                }
+            }
+        }
+        int level = 1;
+        while(!isEmpty()){
+            int loopSize = r-l;
+            for(int loop = 0;loop < loopSize;loop++){
+                int[] poll = poll();
+                int x = poll[0],y = poll[1],status=poll[2];
+                for(int i=0,nx,ny,ns;i<4;i++){
+                    nx = x + direction[i];
+                    ny = y + direction[i+1];
+                    ns = status;
+                    if(nx<0 || nx>=row || ny<0 || ny>=col || arr[nx][ny] == '#'){
+                        continue;
+                    }
+                    if(arr[nx][ny]>='A' && arr[nx][ny]<='F' && (ns&(1<<(arr[nx][ny]-'A')))==0){
+                        continue;
+                    }
+                    if(arr[nx][ny]>='a' && arr[nx][ny]<='f'){
+                        ns |= 1<<(arr[nx][ny]-'a');
+                    }
+                    if(ns == key){
+                        return level;
+                    }
+                    if(!visit[nx][ny][ns]){
+                        push(nx,ny,ns);
+                    }
+                }
+            }
+
+            level++;
+        }
+        return -1;
+
+    }
+    public static void build(String[] grid){
+        row = grid.length;
+        col = grid[0].length();
+        for(int i=0;i<row;i++){
+            arr[i] = grid[i].toCharArray();
+        }
+        key = 0;
+        for(int i=0;i<row;i++){
+            for(int j=0;j<col;j++){
+                if(arr[i][j]>='a' && arr[i][j]<='f'){
+                    key |= 1<<(arr[i][j]-'a');
+                }
+            }
+        }
+        for(int i=0;i<row;i++){
+            for(int j=0;j<col;j++){
+                for(int k=0;k<=key;k++){
+                    visit[i][j][k] = false;
+                }
+            }
+        }
+        l=r=0;
+    }
+    public static boolean isEmpty(){
+        return l==r;
+    }
+    public static int[] poll(){
+        return deque[l++];
+    }
+    public static void push(int x,int y,int status){
+        visit[x][y][status] = true;
+        deque[r][0] = x;
+        deque[r][1] = y;
+        deque[r++][2] = status;
+    }
+}
+
+```
+
+这道题和普通的bfs不同，这个节点不是`row x col`,而是`row x col * status`
+
+然后其他过程和bfs的过程一样。
+
