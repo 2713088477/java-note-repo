@@ -440,3 +440,68 @@ public class Code04_Solution864 {
 
 然后其他过程和bfs的过程一样。
 
+## 题目五:电动车游城市
+
+代码:
+
+```java
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.PriorityQueue;
+
+//测试链接: https://leetcode.cn/problems/DFPeFJ/
+public class Code05_Solution35 {
+    public int electricCarPlan(int[][] paths, int cnt, int start, int end, int[] charge) {
+        int len = charge.length;
+        ArrayList<ArrayList<int[]>> graph = new ArrayList<>();
+        for(int i=0;i<len;i++){
+            graph.add(new ArrayList<>());
+        }
+        //邻接表建图
+        for(int[] path:paths){
+            int from = path[0],to = path[1],value = path[2];
+            graph.get(from).add(new int[]{to,value});
+            graph.get(to).add(new int[]{from,value});
+        }
+        int[][] distance = new int[len][cnt+1];
+        for(int[] dis:distance){
+            Arrays.fill(dis,Integer.MAX_VALUE);
+        }
+        boolean[][] visit = new boolean[len][cnt+1];
+        PriorityQueue<int[]> minHeap = new PriorityQueue<>((a,b)->a[2]-b[2]);
+        minHeap.add(new int[]{start,0,0});
+        while(!minHeap.isEmpty()){
+            int[] poll = minHeap.poll();
+            int nodeId = poll[0],curCharge = poll[1],curCost = poll[2];
+            if(visit[nodeId][curCharge]){
+                continue;
+            }
+            visit[nodeId][curCharge] = true;
+            distance[nodeId][curCharge] = curCost;
+            if(nodeId == end){
+                return curCost;
+            }
+            //扩点决策1:在当前充一格电
+            if(curCharge < cnt){
+                if(!visit[nodeId][curCharge+1] && curCost+charge[nodeId]<distance[nodeId][curCharge+1]){
+                    distance[nodeId][curCharge+1] = curCost+charge[nodeId];
+                    minHeap.add(new int[]{nodeId,curCharge+1,curCost+charge[nodeId]});
+                }
+            }
+            //扩点决策2:不充电直接进入下一层
+            for(int[] edge: graph.get(nodeId)){
+                int to = edge[0],weight = edge[1];
+                if(curCharge>=weight && !visit[to][curCharge-weight] && curCost+weight<distance[to][curCharge-weight]){
+                    distance[to][curCharge-weight] = curCost+weight;
+                    minHeap.add(new int[]{to,curCharge-weight,curCost+weight});
+                }
+            }
+        }
+        return -1;
+    }
+}
+
+```
+
+这道题也是扩点了，`[nodeId][curCharge]`这两个状态的组合形成一个"点"，然后就是分析思考出扩点逻辑。
+
