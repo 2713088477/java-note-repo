@@ -440,7 +440,7 @@ public class Code04_Solution864 {
 
 然后其他过程和bfs的过程一样。
 
-## 题目五:电动车游城市
+## 题目五: 电动车游城市
 
 代码:
 
@@ -505,3 +505,227 @@ public class Code05_Solution35 {
 
 这道题也是扩点了，`[nodeId][curCharge]`这两个状态的组合形成一个"点"，然后就是分析思考出扩点逻辑。
 
+## 题目六: 飞行路线
+
+代码(语言自带堆结构版):
+
+```java
+import java.io.*;
+import java.util.Arrays;
+import java.util.PriorityQueue;
+
+//测试链接:https://www.luogu.com.cn/problem/P4568
+public class Code06_file1_Solution4568 {
+    public static int MAX_N = (int)1E4;
+    public static int MAX_M = (int)5E5+1;
+    public static int MAX_K = 11;
+    //链式前向星
+    public static int[] head = new int[MAX_N];
+    public static int[] next = new int[MAX_M];
+    public static int[] to = new int[MAX_M];
+    public static int[] weight = new int[MAX_M];
+    public static int edgeId = 1;
+    //语言自带的堆
+    public static PriorityQueue<int[]> minHeap = new PriorityQueue<>((a,b)->a[2]-b[2]);
+    public static int n,m,k;
+    public static int sNode, eNode;
+    public static void main(String[] args) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        StreamTokenizer in = new StreamTokenizer(br);
+        PrintWriter out = new PrintWriter(new OutputStreamWriter(System.out));
+        while(in.nextToken() != StreamTokenizer.TT_EOF){
+            n = (int)in.nval;
+            in.nextToken();
+            m = (int)in.nval;
+            in.nextToken();
+            k = (int)in.nval;
+            build(n);
+            in.nextToken();sNode = (int)in.nval;
+            in.nextToken();eNode = (int)in.nval;
+            for(int i=0,from,to,w;i<m;i++){
+                in.nextToken();from = (int)in.nval;
+                in.nextToken();to = (int)in.nval;
+                in.nextToken();w = (int)in.nval;
+                addEdge(from,to,w);
+                addEdge(to,from,w);
+            }
+            int[][] distance = new int[n][k+1];
+            for(int[] dis:distance){
+                Arrays.fill(dis,Integer.MAX_VALUE);
+            }
+            boolean[][] visit = new boolean[n][k+1];
+            minHeap.add(new int[]{sNode,0,0});
+            while(!minHeap.isEmpty()){
+                int[] poll = minHeap.poll();
+                int pollNode = poll[0],freeCnt = poll[1],curPrice = poll[2];
+                if(visit[pollNode][freeCnt]){
+                    continue;
+                }
+                distance[pollNode][freeCnt] = curPrice;
+                visit[pollNode][freeCnt] = true;
+                if(pollNode == eNode){
+                    out.println(curPrice);
+                    break;
+                }
+                for(int nextEdge = head[pollNode];nextEdge!=0;nextEdge = next[nextEdge]){
+                    int toNode = to[nextEdge],wei = weight[nextEdge];
+                    //决策1:使用免费
+                    if(freeCnt<k && !visit[toNode][freeCnt+1] && distance[toNode][freeCnt+1]>curPrice){
+                        minHeap.add(new int[]{toNode,freeCnt+1,curPrice});
+                        distance[toNode][freeCnt+1] = curPrice;
+                    }
+                    //决策2:不使用免费
+                    if(!visit[toNode][freeCnt] && distance[toNode][freeCnt] > curPrice+wei){
+                        minHeap.add(new int[]{toNode,freeCnt,curPrice + wei});
+                        distance[toNode][freeCnt] = curPrice+wei;
+                    }
+                }
+            }
+        }
+        out.flush();
+        out.close();
+        br.close();
+    }
+    public static void build(int n){
+        Arrays.fill(head,0,n,0);
+        edgeId = 1;
+        minHeap.clear();
+    }
+    public static void addEdge(int from,int toNode,int w){
+        next[edgeId] = head[from];
+        to[edgeId] = toNode;
+        weight[edgeId] = w;
+        head[from] = edgeId++;
+    }
+}
+
+```
+
+手搓堆结构版本:
+
+```java
+import java.io.*;
+import java.util.Arrays;
+import java.util.PriorityQueue;
+
+//测试链接:https://www.luogu.com.cn/problem/P4568
+public class Code06_file2_Solution4568 {
+    public static int MAX_N = (int)1E4;
+    public static int MAX_M = (int)5E5+1;
+    public static int MAX_K = 11;
+    //链式前向星
+    public static int[] head = new int[MAX_N];
+    public static int[] next = new int[MAX_M];
+    public static int[] to = new int[MAX_M];
+    public static int[] weight = new int[MAX_M];
+    public static int edgeId = 1;
+    //自己实现的堆结构
+    public static int[][] minHeap = new int[MAX_N*MAX_K][3];
+    public static int heapSize = 0;
+    public static int n,m,k;
+    public static int sNode, eNode;
+    public static void main(String[] args) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        StreamTokenizer in = new StreamTokenizer(br);
+        PrintWriter out = new PrintWriter(new OutputStreamWriter(System.out));
+        while(in.nextToken() != StreamTokenizer.TT_EOF){
+            n = (int)in.nval;
+            in.nextToken();
+            m = (int)in.nval;
+            in.nextToken();
+            k = (int)in.nval;
+            build(n);
+            in.nextToken();sNode = (int)in.nval;
+            in.nextToken();eNode = (int)in.nval;
+            for(int i=0,from,to,w;i<m;i++){
+                in.nextToken();from = (int)in.nval;
+                in.nextToken();to = (int)in.nval;
+                in.nextToken();w = (int)in.nval;
+                addEdge(from,to,w);
+                addEdge(to,from,w);
+            }
+            int[][] distance = new int[n][k+1];
+            for(int[] dis:distance){
+                Arrays.fill(dis,Integer.MAX_VALUE);
+            }
+            boolean[][] visit = new boolean[n][k+1];
+            add(new int[]{sNode,0,0});
+            while(!isEmpty()){
+                int[] poll = poll();
+                int pollNode = poll[0],freeCnt = poll[1],curPrice = poll[2];
+                if(visit[pollNode][freeCnt]){
+                    continue;
+                }
+                distance[pollNode][freeCnt] = curPrice;
+                visit[pollNode][freeCnt] = true;
+                if(pollNode == eNode){
+                    out.println(curPrice);
+                    break;
+                }
+                for(int nextEdge = head[pollNode];nextEdge!=0;nextEdge = next[nextEdge]){
+                    int toNode = to[nextEdge],wei = weight[nextEdge];
+                    //决策1:使用免费
+                    if(freeCnt<k && !visit[toNode][freeCnt+1] && distance[toNode][freeCnt+1]>curPrice){
+                        add(new int[]{toNode,freeCnt+1,curPrice});
+                        distance[toNode][freeCnt+1] = curPrice;
+                    }
+                    //决策2:不使用免费
+                    if(!visit[toNode][freeCnt] && distance[toNode][freeCnt] > curPrice+wei){
+                        add(new int[]{toNode,freeCnt,curPrice + wei});
+                        distance[toNode][freeCnt] = curPrice+wei;
+                    }
+                }
+            }
+        }
+        out.flush();
+        out.close();
+        br.close();
+    }
+    public static void build(int n){
+        Arrays.fill(head,0,n,0);
+        edgeId = 1;
+        heapSize = 0;
+    }
+    public static void addEdge(int from,int toNode,int w){
+        next[edgeId] = head[from];
+        to[edgeId] = toNode;
+        weight[edgeId] = w;
+        head[from] = edgeId++;
+    }
+    public static boolean isEmpty(){
+        return heapSize==0;
+    }
+    public static int[] poll(){
+        int[] pollArr = minHeap[0];
+        swap(0,--heapSize);
+        heapify(0);
+        return pollArr;
+    }
+    public static void add(int[] arr){
+        int heapIndex = heapSize++;
+        minHeap[heapIndex] = arr;
+        while(minHeap[(heapIndex-1)/2][2] > minHeap[heapIndex][2]){
+            swap(heapIndex,(heapIndex-1)/2);
+            heapIndex = (heapIndex-1)/2;
+        }
+    }
+    public static void heapify(int heapIndex){
+        int left = 2*heapIndex+1;
+        while(left < heapSize){
+            int best = left+1<heapSize && minHeap[left+1][2] < minHeap[left][2] ? left+1 : left;
+            if(minHeap[best][2] >= minHeap[heapIndex][2]) break;
+            swap(best,heapIndex);
+            heapIndex = best;
+            left = 2 * heapIndex+1;
+        }
+    }
+    public static void swap(int a,int b){
+        int[] tmp = minHeap[a];
+        minHeap[a] = minHeap[b];
+        minHeap[b] = tmp;
+    }
+}
+
+```
+
+这道题和题目5一样，也是在dj算法上进行了扩点的操作，重点还是如何找到这个"扩点"的思路和想法，其他的都是固定的模板。
