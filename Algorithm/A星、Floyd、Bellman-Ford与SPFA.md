@@ -340,3 +340,152 @@ public class Code03_Bellman_Ford {
 
 ```
 
+
+
+>Bellman-Ford 与 SPFA
+
+Bellman-Ford + SPFA优化(Shortest Path Faster Algorithm)
+
+很轻易就能发现，每一轮考察所有的边看看能否做松弛操作是不必要的
+
+因为只有上一次被某条边松弛过的节点，所连接的边，才有可能需求下一次的松弛操作
+
+所以用队列来维护"这一轮哪些节点的distance变小了"
+
+下一轮只需要对这些点的所有边，考察有没有松弛操作即可
+
+
+
+SPFA只优化了常数时间，在大多数情况下跑得很快，但时间复杂度为O(n*m)
+
+看复杂度就知道只适用于小图，根据数据量谨慎使用，在没有负权边时要使用Dijkstra算法
+
+
+
+Bellman-Ford+SPFA优化的用途
+
+1) 适用于小图
+
+2) 解决有负边(没有负环)的图的单源最短路径问题
+
+3) 可以判断从某个点出发是否能遇到负环，<font color="red">如果想判断整张有向图有没有负环，需要设置虚拟源点</font>
+
+4) 并行计算时会有很大优势，因为每一轮多点判断松弛操作是相互独立的，可以交给多线程处理
+
+
+
+注意:
+
+SPFA的另一个重要的用途是解决"费用流"问题，当然也可以被Primal-Dual原始对偶算法替代
+
+
+
+
+
+洛谷模板题:
+
+```java
+import java.io.*;
+import java.util.Arrays;
+
+//测试链接: https://www.luogu.com.cn/problem/P3385
+
+/**
+ * Bellman_Ford + SPFA
+ * 判断是否存在负环
+ */
+public class Code04_SPFA {
+    public static int MAX_N = (int)2E3+1,MAX_M = (int)6E3;
+    //链式前向星建图
+    public static int[] head = new int[MAX_N];
+    public static int[] next = new int[MAX_M];
+    public static int[] to = new int[MAX_M];
+    public static int[] value = new int[MAX_M];
+    public static int edgeId = 1;
+
+    //distance表
+    public static int[] distance = new int[MAX_N];
+
+    //SPFA优化所需要的队列
+    public static int[] queue = new int[MAX_N*MAX_N];
+    public static int l,r;
+    //SPFA优化所需要的判断是否在队列中的数组
+    public static boolean[] entry = new boolean[MAX_N];
+
+    //判断负环所特需要的count数组
+    public static int[] updateCount = new int[MAX_N];
+
+    public static int n,m;
+
+    public static void main(String[] args) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        StreamTokenizer in = new StreamTokenizer(br);
+        PrintWriter out = new PrintWriter(new OutputStreamWriter(System.out));
+        while(in.nextToken() != StreamTokenizer.TT_EOF){
+            int t = (int)in.nval;
+            while((t--)>0){
+                in.nextToken(); n = (int) in.nval;
+                in.nextToken(); m = (int) in.nval;
+                build(n);
+                for(int i=0,fromNode,toNode,weight;i<m;i++){
+                    in.nextToken(); fromNode = (int) in.nval;
+                    in.nextToken(); toNode = (int) in.nval;
+                    in.nextToken(); weight = (int) in.nval;
+                    if(weight>=0){
+                        addEdge(fromNode,toNode,weight);
+                        addEdge(toNode,fromNode,weight);
+                    }else{
+                        addEdge(fromNode,toNode,weight);
+                    }
+                }
+                out.println(spfa()?"YES":"NO");
+            }
+
+        }
+        out.flush();
+        out.close();
+        br.close();
+    }
+    //初始化
+    public static void build(int n){
+        edgeId = 1;
+        Arrays.fill(head,1,n+1,0);
+        Arrays.fill(distance,1,n+1,Integer.MAX_VALUE);
+        l=r=0;
+        Arrays.fill(entry,1,n+1,false);
+        Arrays.fill(updateCount,1,n+1,0);
+    }
+    public static void addEdge(int fromNode,int toNode,int weight){
+        next[edgeId] = head[fromNode];
+        to[edgeId] = toNode;
+        value[edgeId] = weight;
+        head[fromNode] = edgeId++;
+    }
+    public static boolean spfa(){
+        distance[1] = 0;
+        entry[1] = true;
+        queue[r++] = 1;
+        while(l<r){
+            int pollNode = queue[l++];
+            entry[pollNode] = false;
+            for(int edge = head[pollNode];edge!=0;edge = next[edge]){
+                int toNode =to[edge],weight = value[edge];
+                if(distance[pollNode] + weight < distance[toNode]){
+                    if(!entry[toNode]){
+                        if(++updateCount[toNode] >= n ){
+                            return true;
+                        }
+                        queue[r++] =toNode;
+                        entry[toNode] = true;
+                    }
+                    distance[toNode] = distance[pollNode] + weight;
+                }
+
+            }
+        }
+        return false;
+    }
+}
+
+```
+
