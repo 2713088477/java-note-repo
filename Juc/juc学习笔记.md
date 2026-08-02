@@ -916,3 +916,57 @@ public class VisibleTest {
 
 2) volatile
 
+
+
+## 22.有序性(指令重排)
+
+有序性最终表述的现象是CPU是否按照既定代码顺序执行依次执行指令。
+
+编译器和CPU为了提高指令的执行效率可能会进行指令重排序，这使得代码的实际执行方式可能不是按照我们所认为的方式进行。
+
+在**单线程的情况下只要保证最终执行结果正确**即可
+
+```java
+package basicUse;
+
+public class SerialTest {
+    static SerialTest serialTest;
+    static Boolean isInit;
+
+    public static void main(String[] args) throws InterruptedException {
+
+        for(int i=0;i<100_000;i++){
+            serialTest = null;
+            isInit = false;
+
+            Thread thread1 = new Thread(()->{
+                serialTest = new SerialTest();
+                isInit = true; //指令重重排序可能将这个排在 new SerialTest()上面
+            });
+            Thread thread2 = new Thread(()->{
+                if(isInit){
+                    serialTest.doSomething();
+                }
+            });
+
+            thread1.start();
+            thread2.start();
+
+            thread1.join();
+            thread2.join();
+        }
+    }
+    public void doSomething(){
+        System.out.println("doSomething");
+    }
+
+}
+
+```
+
+解决方案:
+
+1) `synchronized` 串行执行
+
+2) `volatile` 关键字可以保证一定的"有序性"
+
