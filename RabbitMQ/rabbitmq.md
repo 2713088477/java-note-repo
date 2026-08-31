@@ -1,6 +1,6 @@
 # RabbitMQ
 
-## RabbitMQ介绍
+## 1.RabbitMQ介绍
 
 RabbitMQ是一款典型的异步通信组件。
 
@@ -67,7 +67,7 @@ RabbitMQ是一款典型的异步通信组件。
 
 
 
-## MQ的技术选型
+## 2.MQ的技术选型
 
 MQ（MessageQueue），中文是消息队列，字面来看就是存放消息的队列。也就是异步调用中的 Broker。
 
@@ -87,3 +87,24 @@ RabbitMQ的基本介绍:
 
 ![](assets\RabbitMQ的基本介绍.png)
 
+## 3.数据隔离
+
+![](assets\利用virtual_host进行数据隔离.png)
+
+通过virtual host可以实现数据隔离，不同的virtual host之间互不影响
+
+## 4.Java客户端快速入门
+
+![](assets\amqp.png)
+
+Spring AMQP:[Spring AMQP](https://spring.io/projects/spring-amqp)
+
+
+
+
+
+SpringAMQP如何收发消息？
+1.引入spring-boot-starter-amqp依赖
+2.配置rabbitmq服务端信息
+3.利用RabbitTemplate发送消息
+4.利用@RabbitListener注解声明要监听的队列，监听消息
