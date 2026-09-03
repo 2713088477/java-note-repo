@@ -108,3 +108,93 @@ SpringAMQP如何收发消息？
 2.配置rabbitmq服务端信息
 3.利用RabbitTemplate发送消息
 4.利用@RabbitListener注解声明要监听的队列，监听消息
+
+```java
+//发消息
+record User(String name,Integer age){}
+@Test
+public void sendMessage(){
+    User user = new User("张峻豪", 21);
+    String queueName = "queue1";
+    rabbitTemplate.convertAndSend(queueName,user);
+}
+```
+
+```java
+//收消息
+@Slf4j
+@Component
+public class MqListener {
+
+    record User(String name,Integer age){}
+
+    @RabbitListener(queues = "queue1")
+    public void listenSimpleQueue(User user){
+        log.info("消费者收到了消息:【{}】",user);
+    }
+}
+
+```
+
+提示，配置一下mq的消息转换器(使用Jackson来序列化对象)
+
+```java
+@Configuration
+public class RabbitMQConfig {
+    @Bean
+    public MessageConverter jsonMessageConverter(){
+        return new JacksonJsonMessageConverter();
+    }
+}
+
+```
+
+## 5.Java客户端work模型
+
+默认情况下，RabbitMQ会将消息依次轮询投递给绑定在队列上的每一个消费者。但这并没有考虑到消费者是否已经处理完消息，可能出现消息堆积。
+
+```java
+@Slf4j
+@Component
+public class MqListener {
+    @RabbitListener(queues = "work.queue")
+    public void listenWorkQueue1(String msg) throws InterruptedException {
+        log.info("消费者1收到了消息:【{}】",msg);
+        Thread.sleep(20);
+    }
+    @RabbitListener(queues = "work.queue")
+    public void listenWorkQueue2(String msg) throws InterruptedException {
+        log.info("消费者2222收到了消息:【{}】",msg);
+        Thread.sleep(200);
+    }
+}
+```
+
+![](assets\默认轮询.png)
+
+
+因此我们需要修改`application.yml`设置preFetch值为1，确保同一时刻最多投递给消费者1条消息
+
+```
+spring:
+  application:
+    name: consumer
+
+  rabbitmq:
+    host: 127.0.0.1
+    port: 5672
+    username: yiyi
+    password: 1234
+    virtual-host: test_virtual
+    listener:
+      simple:
+        prefetch: 1
+```
+
+![](assets\设置preFetch之后.png)
+
+Work模型的使用：
+
+- 多个消费者绑定到一个队列，可以加快消息处理速度
+- 同一条消息只会被一个消费者处理
+- 通过设置prefetch来控制消费者预取的消息数量，处理完一条再处理下一条，实现能者多劳
