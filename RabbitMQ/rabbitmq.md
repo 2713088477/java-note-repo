@@ -198,3 +198,250 @@ Work模型的使用：
 - 多个消费者绑定到一个队列，可以加快消息处理速度
 - 同一条消息只会被一个消费者处理
 - 通过设置prefetch来控制消费者预取的消息数量，处理完一条再处理下一条，实现能者多劳
+
+## 6.Java客户端-Fanout交换机
+
+真正的生产环境都会经过exchange来发送消息，而不是直接发送到队列，交换机的类型有以下三种:
+
+> Fanout：广播
+>
+> Direct：定向
+>
+> Topic：话题
+
+```mermaid
+graph LR
+    classDef publisher fill:#4F81BD,font-color:#fff,stroke:#315C8F;
+    classDef exchange fill:#D3C5E3,stroke:#9575CD;
+    classDef queue fill:#F8BBD0,stroke:#E91E63;
+    classDef consumer fill:#7CB342,font-color:#fff,stroke:#558B2F;
+
+    P[publisher]:::publisher --> E{exchange}:::exchange
+    E --> Q1[(queue1)]:::queue
+    E --> Q2[(queue2)]:::queue
+    Q1 --> C1[consumer1]:::consumer
+    Q1 --> C2[consumer2]:::consumer
+    Q2 --> C3[consumer3]:::consumer
+```
+
+
+
+Fanout Exchange会将接收到的消息广播到每一个跟其绑定的queue，所以也叫广播模型
+
+```java
+@Test
+public void sendMessage2Exchange() throws InterruptedException {
+    String exchangeName = "test.fanout";
+    String message = "我是广播的消息";
+    rabbitTemplate.convertAndSend(exchangeName,null,message);
+}
+```
+
+```java
+@RabbitListener(queues = "fanout.queue1")
+public void listenFanoutQueue1(String msg){
+    log.info("消费者1收到了消息:【{}】",msg);
+}
+@RabbitListener(queues = "fanout.queue2")
+public void listenFanoutQueue2(String msg)  {
+    log.info("消费者2222收到了消息:【{}】",msg);
+}
+```
+
+交换机的作用:
+
+1.接收publisher发送的消息
+
+2.将消息按照规则路由到与之绑定的队列
+
+3.FanoutExchange的会将消息路由到每个绑定的队列
+
+## 7.Java客户端-Direct交换机
+
+Direct Exchange会将接收到的消息根据规则路由到指定的Queue，因此称为**定向**路由。
+
+> 每一个Queue都与Exchange设置一个BindingKey
+>
+> 发布者发送消息时，指定消息的RoutingKey
+>
+> Exchange将消息路由到BindingKey与消息RoutingKey一致的队列
+
+```mermaid
+graph LR
+    A[["publisher"]] --> B[("Direct\nexchange")]
+    B --> C[["queue1"]]
+    B --> D[["queue2"]]
+    C --> E[["consumer1"]]
+    D --> F[["consumer2"]]
+
+    classDef node1 fill:#4a90e2,color:#fff,stroke:#fff,stroke-width:2px;
+    classDef node2 fill:#b098cc,color:#fff,stroke:#fff,stroke-width:2px;
+    classDef node3 fill:#f8959e,color:#fff,stroke:#fff,stroke-width:2px;
+    classDef node4 fill:#8bb946,color:#fff,stroke:#fff,stroke-width:2px;
+    
+    class A node1;
+    class B node2;
+    class C,D node3;
+    class E,F node4;
+```
+
+
+
+```java
+@Test
+public void sendMessage2DirectExchange() throws InterruptedException {
+    String exchangeName = "test.direct";
+    String message = "红色预警:日本排放核污水，惊现异常生物！！！";
+    rabbitTemplate.convertAndSend(exchangeName,"red",message);
+}
+```
+
+```java
+@RabbitListener(queues = "direct.queue1")
+public void listenDirectQueue1(String msg){
+    log.info("消费者1收到了消息:【{}】",msg);
+}
+@RabbitListener(queues = "direct.queue2")
+public void listenDirectQueue2(String msg)  {
+    log.info("消费者2222收到了消息:【{}】",msg);
+}
+```
+
+## 8.Java客户端-Topic交换机
+
+TopicExchange与DirectExchange类似，区别在于routingKey可以是多个单词的列表，并且以`.`分割。
+
+Queue与Exchange指定BingdingKey时可以使用通配符
+
+> `#`：代指0个或多个单词
+>
+> `*`：代指一个单词
+
+```mermaid
+graph LR
+    A[publisher] --> B[Topic exchange]
+    B --> C[bindingKey: china.#<br>queue1]
+    B --> D[bindingKey: japan.#<br>queue2]
+    B --> E[bindingKey: #.weather<br>queue3]
+    B --> F[bindingKey: #.news<br>queue4]
+    
+    C --> G[consumer1]
+    D --> H[consumer2]
+    E --> I[consumer3]
+    F --> J[consumer4]
+```
+
+
+
+```java
+@Test
+public void sendMessage2TopicExchange() throws InterruptedException {
+    String exchangeName = "test.topic";
+    String message = "樊振东 vs 张本智和";
+    rabbitTemplate.convertAndSend(exchangeName,"china.news",message);
+}
+```
+
+```java
+@RabbitListener(queues = "topic.queue1")
+public void listenTopicQueue1(String msg){
+    log.info("消费者1收到了消息:【{}】",msg);
+}
+@RabbitListener(queues = "topic.queue2")
+public void listenTopicQueue2(String msg)  {
+    log.info("消费者2222收到了消息:【{}】",msg);
+}
+```
+
+描述下Direct交换机与Topic交换机的差异？
+
+> Topic交换机接收的消息RoutingKey可以是多个单词，以`.`分割
+>
+> Topic交换机与队列绑定时的bindingKey可以指定通配符
+>
+> #：代表0个或多个词
+>
+> *：代表1个词
+
+## 9.声明队列和交换机的方式
+
+SpringAMQP提供了几个类，用来声明队列、交换机及其绑定关系:
+
+> Queue：用于声明队列，可以用工厂类QueueBuilder构建
+>
+> Exchange：用于声明交换机，可以用工厂类ExchangeBuilder构建
+>
+> Binding：用于声明队列和交换机的绑定关系，可以用工厂类BindingBuilder构建
+
+```java
+import org.springframework.amqp.core.*;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+
+@Configuration
+public class CreateConfig {
+
+    @Bean
+    public Queue createQueue1(){
+        return new Queue("test.create.queue1");
+    }
+    @Bean
+    public FanoutExchange createFanoutExchange(){
+        return new FanoutExchange("test.create.fanoutExchange");
+    }
+    @Bean
+    public Binding testBing(){
+        return BindingBuilder.bind(createQueue1()).to(createFanoutExchange());
+    }
+
+}
+```
+
+SpringAMQP还提供了基于@RabbitListener注解来声明队列和交换机的方式:
+
+```java
+@RabbitListener(bindings = @QueueBinding(
+    value = @Queue(name = "test.creat.annotation"),
+    exchange = @Exchange(name = "test.create.annotation.exchange",type = ExchangeTypes.DIRECT),
+    key = {"red","blue"}
+))
+public void listenAnnotationCreate(String msg){
+    log.info("listenAnnotationCreate accept message:{}",msg);
+
+}
+```
+
+## 10.Java客户端-消息转换器
+
+Spring的对消息对象的处理是由`org.springframework.amqp.support.converter.MessageConverter`来处理的。而默认实现是`SimpleMessageConverter`，基于JDK的`ObjectOutputStream`完成序列化。
+存在下列问题：
+
+> JDK的序列化有安全风险
+> JDK序列化的消息太大
+> JDK序列化的消息可读性差 
+
+建议采用JSON序列化代替默认的JDK序列化，要做两件事情：
+
+在publisher和consumer中都要引入jackson依赖：
+
+```xml
+<dependency>
+    <groupId>com.fasterxml.jackson.core</groupId>
+    <artifactId>jackson-databind</artifactId>
+</dependency>
+```
+
+在publisher和consumer中都要配置MessageConverter：
+
+```java
+@Configuration
+public class RabbitMQConfig {
+    @Bean
+    public MessageConverter jsonMessageConverter(){
+        return new JacksonJsonMessageConverter();
+    }
+}
+
+```
+
